@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smse/components/custom_button.dart';
 
 import '../../../../../components/textFeildCustom.dart';
+import '../../../../../constants.dart';
 class MobileLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class MobileLoginPage extends StatelessWidget {
               SizedBox(height: 10),
               Textfeildcustom(obsecure: true, label: 'Enter your password'),
               SizedBox(height: 20),
-              CustomButton(color:0xFF1C1B1F , text: "Log In", colorText: Colors.white),
+              CustomButton(color:Constant.whiteColor , text: "Log In", colorText: Colors.white),
 
               SizedBox(height: 20),
               Text(
@@ -38,7 +39,7 @@ class MobileLoginPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-              CustomButton(color:0xFFEFF1F5 , text: 'Reset Password',colorText: Colors.black,),
+              CustomButton(color:Constant.blackColor , text: 'Reset Password',colorText: Colors.black,),
 
               SizedBox(height: 20),
               Text(
@@ -49,7 +50,7 @@ class MobileLoginPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20,),
-              CustomButton(color:0xFFEFF1F5 , text: 'Create Account',colorText: Colors.black,),
+              CustomButton(color:Constant.blackColor , text: 'Create Account',colorText: Colors.black,),
 
             ],
           ),

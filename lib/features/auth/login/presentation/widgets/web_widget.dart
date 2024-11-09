@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../components/textFeildCustom.dart';
+import '../../../../../constants.dart';
 class WebLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class WebLoginPage extends StatelessWidget {
                 ElevatedButton(
 
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1C1B1F),
+                    backgroundColor: const Color(Constant.whiteColor),
                     padding: EdgeInsets.all(20),
 
                   ),
