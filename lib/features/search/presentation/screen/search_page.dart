@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smse/features/search/presentation/screen/search_page.dart';
+import 'package:smse/features/search/presentation/widgets/mobile_search_page.dart';
+import 'package:smse/features/search/presentation/widgets/search_page_web.dart';
 
 class SearchPage extends StatelessWidget {
   @override

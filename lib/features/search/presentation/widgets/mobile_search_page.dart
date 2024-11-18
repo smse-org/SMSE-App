@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:smse/features/search/presentation/screen/search_page.dart';
+import 'package:smse/components/content_card.dart';
 
 
 class MobileSearchView extends StatelessWidget {
+  const MobileSearchView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ListView(

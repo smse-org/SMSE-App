@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:smse/features/search/presentation/screen/search_page.dart';
+import 'package:smse/components/content_card.dart';
 
 class WebSearchView extends StatelessWidget {
+  const WebSearchView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
