@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smse/features/auth/login/presentation/screen/login.dart';
 import 'package:smse/features/home/presentation/screen/homapage.dart';
+import 'package:smse/features/search/presentation/screen/search_page.dart';
 
 import 'features/auth/signup/presentation/screen/signup_page.dart';
 
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomePage(),
+      home: SearchPage(),
     );
   }
 }
