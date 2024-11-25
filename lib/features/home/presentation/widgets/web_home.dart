@@ -11,7 +11,7 @@ class WebHomePage extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
 
-          constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width/1.8),
+          constraints: const BoxConstraints(maxWidth: double.infinity),
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
             child: Column(

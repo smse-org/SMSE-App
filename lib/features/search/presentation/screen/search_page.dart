@@ -7,16 +7,19 @@ class SearchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Search Results', style: TextStyle(fontSize: 24 , fontWeight: FontWeight.bold),),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < 600) {
             // Mobile view
-            return MobileSearchView();
-          } else {
+            return const SafeArea(child: MobileSearchView());
+          } else if (constraints.maxWidth < 800) {
             // Web/Desktop view
-            return WebSearchView();
+            return const WebSearchView(number: 2);
+          }else{
+            return const WebSearchView(number: 3);
           }
         },
       ),

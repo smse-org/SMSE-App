@@ -1,22 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:smse/features/auth/login/presentation/screen/login.dart';
-import 'package:smse/features/home/presentation/screen/homapage.dart';
-import 'package:smse/features/search/presentation/screen/search_page.dart';
-
-import 'features/auth/signup/presentation/screen/signup_page.dart';
+import 'package:smse/features/mainPage/responsive_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
 
-  // This widget is the root of your application.
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light; // Default theme mode
+
+  void toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SearchPage(),
+      debugShowCheckedModeBanner: false,
+      title: 'Responsive Navigation with Theme Switching',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: _themeMode,
+      home: ResponsiveHome(toggleTheme: toggleTheme, themeMode: _themeMode),
     );
   }
 }

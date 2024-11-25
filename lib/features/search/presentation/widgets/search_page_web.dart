@@ -1,26 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:smse/components/content_card.dart';
+import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 
 class WebSearchView extends StatelessWidget {
-  const WebSearchView({super.key});
-
+  const WebSearchView( { required this.number});
+  final int number;
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16.0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 4 / 1.8,
-      ),
-      itemCount: 4,
-      itemBuilder: (context, index) {
-        return SearchResultCard(
-          title: 'File Name ${index + 1}',
-          score: 95 - (index * 5),
-        );
-      },
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB( 16, 0, 16, 0),
+          child: SearchBarCustom(),
+        ),
+        const SizedBox(height: 20),
+        Expanded(
+          child: GridView.builder(
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: number, // Adjust based on screen size
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 3 / 2,
+            ),
+            itemCount: 4,
+            itemBuilder: (context, index) {
+              return ContentCardWeb(
+                title: 'File Name ${index + 1}',
+                relevanceScore: 95 - (index * 5),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

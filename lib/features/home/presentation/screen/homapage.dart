@@ -3,22 +3,6 @@ import 'package:flutter/material.dart';
 import '../widgets/mobile_home.dart';
 import '../widgets/web_home.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Search UI',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomePage(),
-    );
-  }
-}
 
 class HomePage extends StatelessWidget {
   @override
@@ -27,7 +11,7 @@ class HomePage extends StatelessWidget {
       builder: (context, constraints) {
         if (constraints.maxWidth < 600) {
           // Display mobile UI if the screen width is less than 600
-          return MobileHomePage();
+          return SafeArea(child: MobileHomePage());
         } else {
           // Display web UI if the screen width is 600 or more
           return WebHomePage();

@@ -13,7 +13,7 @@ class ResponsiveLoginPage extends StatelessWidget {
           return WebLoginPage();
         } else {
           // Render mobile version
-          return MobileLoginPage();
+          return SafeArea(child: MobileLoginPage());
         }
       },
     );
