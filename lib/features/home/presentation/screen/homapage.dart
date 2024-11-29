@@ -47,18 +47,10 @@ class RecentSearches extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        ListTile(
-          title: Text("Sunset beach photos"),
-        ),
-        ListTile(
-          title: Text("Black hole research papers"),
-        ),
-        ListTile(
-          title: Text("Jazz music albums"),
-        ),
-        ListTile(
-          title: Text("Documentaries on space exploration"),
-        ),
+       TextHomeCard(title: "Sunset beach photos"),
+        TextHomeCard(title: "Black hole research"),
+        TextHomeCard(title: "Documentaries on space exploration"),
+        TextHomeCard(title: "Healthy recipes for dinner"),
       ],
     );
   }
@@ -69,19 +61,35 @@ class SearchSuggestions extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        ListTile(
-          title: Text("Popular travel destinations"),
-        ),
-        ListTile(
-          title: Text("Latest technology trends"),
-        ),
-        ListTile(
-          title: Text("Top movies of 2023"),
-        ),
-        ListTile(
-          title: Text("Healthy recipes for dinner"),
-        ),
+        TextHomeCard(title: "Popular travel destinations"),
+        TextHomeCard(title: "Latest technology trends"),
+        TextHomeCard(title: "Top movies of 2023"),
+        TextHomeCard(title: "Healthy recipes for dinner"),
+
       ],
+    );
+  }
+}
+
+
+class TextHomeCard extends StatelessWidget {
+  const TextHomeCard({super.key, required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return  Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.white70),
+          borderRadius: BorderRadius.circular(5),
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.white
+            : Colors.black,
+      ),
+      child:  ListTile(
+        title: Text(title),
+      ),
     );
   }
 }

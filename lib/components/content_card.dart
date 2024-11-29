@@ -15,27 +15,20 @@ class ContentCardWeb extends StatelessWidget {
         Navigator.push(context, MaterialPageRoute(builder: (context) =>  FileViewerPage()));
       },
       child: Card(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 180,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[300],
-                border: Border.all(color: Colors.grey[800]!),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/image/beach.jpg', fit: BoxFit.cover, height: 200),
+              const SizedBox(height: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text('Relevance Score: $relevanceScore'),
+              const SizedBox(height: 8),
 
-              ),
-              child: const Center(child: Text('Image')),
-            ),
-            const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Relevance Score: $relevanceScore'),
-            const SizedBox(height: 16),
-
-          ],
+            ],
+          ),
         ),
       ),
     );

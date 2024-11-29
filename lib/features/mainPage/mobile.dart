@@ -1,3 +1,4 @@
+import 'package:fancy_bottom_navigation_plus/fancy_bottom_navigation_plus.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/material.dart';
@@ -39,31 +40,34 @@ HomePage(),
         ],
       ),
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: FancyBottomNavigationPlus(
+        initialSelection: _currentIndex,
+        shadowRadius: 10,
+        circleColor: widget.themeMode == ThemeMode.light ? Colors.white : Colors.black,
+        onTabChangedListener: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        selectedItemColor: widget.themeMode == ThemeMode.light ? Colors.black : Colors.white,
-        unselectedItemColor:widget.themeMode == ThemeMode.light ? Colors.grey : Colors.grey[300],
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
+        // selectedItemColor: widget.themeMode == ThemeMode.light ? Colors.black : Colors.white,
+        // unselectedItemColor:widget.themeMode == ThemeMode.light ? Colors.grey : Colors.grey[300],
+        tabs:  [
+          TabData(
+            icon: const Icon(Icons.home),
+            title: "Home",
+
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Search",
+          TabData(
+            icon: const Icon(Icons.search),
+            title: "Search",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: "Favorites",
+          TabData(
+            icon: const Icon(Icons.favorite),
+            title: "Favorites",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
+          TabData(
+            icon: const Icon(Icons.person),
+            title: "Profile",
           ),
         ],
       ),
