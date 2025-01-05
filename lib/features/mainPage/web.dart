@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb check
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/features/favourite/presentation/screen/favourite_page.dart';
+import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 import 'package:smse/features/home/presentation/screen/homapage.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
@@ -10,8 +12,9 @@ import 'package:smse/features/search/presentation/screen/search_page.dart';
 class WebLayout extends StatefulWidget {
   final VoidCallback toggleTheme;
   final ThemeMode themeMode;
+  final Widget child; // Render the current page
 
-  const WebLayout({super.key, required this.toggleTheme, required this.themeMode});
+  const WebLayout({super.key, required this.toggleTheme, required this.themeMode, required this.child});
 
   @override
   _WebLayoutState createState() => _WebLayoutState();
@@ -75,21 +78,28 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+
       floatingActionButton: FloatingActionButton(
         onPressed: _searchAndUploadFiles,
-        child: const Icon(Icons.add),
         backgroundColor: Colors.blue,
+        child: const Icon(Icons.add),
       ),
       appBar: AppBar(
         leading: Image.asset(Constant.logoImage),
         actions: [
-          IconButton(
-            icon: Icon(widget.themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
-            onPressed: widget.toggleTheme,
+          BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              return IconButton(
+                icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+                onPressed: () => context.read<ThemeCubit>().toggleTheme(), // Toggle theme using ThemeCubit
+              );
+            },
           ),
         ],
         title: const Text("SMSE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -100,10 +110,7 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _pages,
-      ),
+      body: widget.child, // Use the child passed to this layout
     );
   }
 }

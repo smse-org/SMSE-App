@@ -1,0 +1,30 @@
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+import 'package:smse/core/error/failuers.dart';
+import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/core/utililes/cachedSP.dart';
+import 'package:smse/features/auth/login/data/model/user.dart';
+import 'package:smse/features/auth/login/data/repositories/loginrepo.dart';
+
+class LoginRepoImp extends LoginRepo{
+  final ApiService apiService;
+
+  LoginRepoImp(this.apiService);
+
+  @override
+  Future<Either<Faliuer, String>> login(UserModel userModel) async {
+    try {
+      final response = await apiService.post(endpoint: 'login', data: userModel.toJson());
+      final token = response['access_token'];
+
+
+      CachedData.storeData("toke", token);
+
+      return Right(token);
+    } on DioException catch (e) {
+      return Left(ServerFailuer.fromDioError(e));
+    } catch (e) {
+      return Left(ServerFailuer(e.toString()));
+    }
+  }
+}

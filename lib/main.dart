@@ -1,33 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:smse/features/mainPage/responsive_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/core/routes/app_router.dart';
+import 'package:smse/core/utililes/cachedSP.dart';
+import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await CachedData.cachInit(); // Ensure SharedPreferences is initialized
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.light; // Default theme mode
-
-  void toggleTheme() {
-    setState(() {
-      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    });
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Responsive Navigation with Theme Switching',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: _themeMode,
-      home: ResponsiveHome(toggleTheme: toggleTheme, themeMode: _themeMode),
+    return BlocProvider(
+      create: (_) => ThemeCubit()..loadTheme(), // Initialize ThemeCubit and load theme preference
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp.router(
+            routerConfig: AppRouter.router,
+            debugShowCheckedModeBanner: false,
+            title: 'Responsive Navigation with Theme Switching',
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            themeMode: themeMode, // Apply the selected theme mode
+          );
+        },
+      ),
     );
   }
 }

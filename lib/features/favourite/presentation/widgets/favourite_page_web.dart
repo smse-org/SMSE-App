@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smse/components/content_card.dart';
+import 'package:smse/core/components/content_card.dart';
 class FavoritesPageWeb extends StatelessWidget {
   const FavoritesPageWeb(this.number);
   final int number;

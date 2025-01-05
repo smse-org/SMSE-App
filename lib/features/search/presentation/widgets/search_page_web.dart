@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:smse/components/content_card.dart';
+import 'package:smse/core/components/content_card.dart';
 import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 
 class WebSearchView extends StatefulWidget {
