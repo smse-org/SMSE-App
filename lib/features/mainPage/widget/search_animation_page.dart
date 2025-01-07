@@ -1,6 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/features/mainPage/controller/file_cubit.dart';
+import 'package:smse/features/mainPage/repo/file_upload_repo_imp.dart';
+import 'package:smse/features/mainPage/repo/file_uploadrepo.dart';
 import 'package:smse/features/mainPage/widget/file_upload_progress_page.dart';
 
 class SearchAnimationPage extends StatefulWidget {
@@ -30,18 +37,21 @@ class _SearchAnimationPageState extends State<SearchAnimationPage> {
       List<String> files = result.paths.whereType<String>().toList();
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => FileUploadProgressPage(files: files),
+        // Show upload progress dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false, // Prevent dismissal while uploading
+          builder: (_) => BlocProvider(
+            create: (_) => FileUploadCubit(FileUploadRepoImp(ApiService(Dio()))),
+            child: FileUploadProgressDialog(files: files),
           ),
         );
       }
     } else if (mounted) {
-      Navigator.pop(context);
+      // Go back to the previous page if no file is selected
+      GoRouter.of(context).pop();
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

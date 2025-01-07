@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:smse/constants.dart';
+import 'package:smse/core/utililes/cachedSP.dart';
 
 class ApiService {
   final String _baseUrl = "https://smseai.me/api/v1/";
@@ -9,7 +11,13 @@ class ApiService {
   // GET request
   Future<Map<String, dynamic>> get({required String endpoint}) async {
     try {
-      final response = await _dio.get("$_baseUrl$endpoint");
+      final response = await _dio.get("$_baseUrl$endpoint",
+      options: Options(
+        headers: {
+         'Authorization': 'Bearer ${await CachedData.getData(Constant.token)}',
+        },)
+
+      );
 
       if (response.statusCode == 200) {
         return response.data;
@@ -24,24 +32,46 @@ class ApiService {
   // POST request
   Future<Map<String, dynamic>> post({
     required String endpoint,
-    required Map<String, dynamic> data,
-  }) async {
-    try {
-      final response = await _dio.post("$_baseUrl$endpoint", data: data);
+    required dynamic data,
+    bool? token=false,
+    Function(int sent, int total)? onSendProgress,
 
-      if (response.statusCode == 200) {
-        return response.data;
-      }else if (response.statusCode == 400) {
-        // Handle 400 error more gracefully
-        throw DioException(
-          requestOptions: response.requestOptions,
-          error: response.data['msg'], // Extract message from response
+  }) async {
+    if (token == true) {
+      try {
+        final response = await _dio.post("$_baseUrl$endpoint",
+            data: data,
+            options: Options(
+                headers: {
+            'Content-Type': 'multipart/form-data',
+                  'Authorization': 'Bearer ${await CachedData.getData(
+                      Constant.token)}',
+                },
+            ),
+          onSendProgress: onSendProgress
         );
-      } else {
-        throw Exception('Failed to post data');
+        return response.data;
+      } catch (e) {
+        throw Exception('Error during POST request: $e');
       }
-    } catch (e) {
-      throw Exception('Error during POST request: $e');
+    } else {
+      try {
+        final response = await _dio.post("$_baseUrl$endpoint", data: data);
+
+        if (response.statusCode == 200) {
+          return response.data;
+        } else if (response.statusCode == 400) {
+          // Handle 400 error more gracefully
+          throw DioException(
+            requestOptions: response.requestOptions,
+            error: response.data['msg'], // Extract message from response
+          );
+        } else {
+          throw Exception('Failed to post data');
+        }
+      } catch (e) {
+        throw Exception('Error during POST request: $e');
+      }
     }
   }
 }

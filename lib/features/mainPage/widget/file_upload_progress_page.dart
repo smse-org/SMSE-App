@@ -1,63 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/features/mainPage/controller/file_cubit.dart';
+import 'package:smse/features/mainPage/controller/file_state.dart';
 
-class FileUploadProgressPage extends StatefulWidget {
+class FileUploadProgressDialog extends StatelessWidget {
   final List<String> files;
 
-  const FileUploadProgressPage({Key? key, required this.files}) : super(key: key);
-
-  @override
-  _FileUploadProgressPageState createState() => _FileUploadProgressPageState();
-}
-
-class _FileUploadProgressPageState extends State<FileUploadProgressPage> {
-  double progress = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _uploadFiles();
-  }
-
-  Future<void> _uploadFiles() async {
-    for (int i = 0; i < widget.files.length; i++) {
-      await Future.delayed(const Duration(seconds: 5));
-      setState(() {
-        progress = ((i + 1) / widget.files.length) * 100;
-      });
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("All files uploaded successfully!")),
-    );
-    if (mounted) Navigator.pop(context);
-  }
+  const FileUploadProgressDialog({Key? key, required this.files}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Uploading Files")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Uploading... ${progress.toStringAsFixed(0)}%",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            LinearProgressIndicator(
-              value: progress / 100,
-              minHeight: 10,
-              backgroundColor: Colors.grey[300],
-              color: Colors.blue,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "File ${((progress / 100) * widget.files.length).ceil()} of ${widget.files.length}",
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
+    context.read<FileUploadCubit>().uploadFiles(files);
+
+    return BlocListener<FileUploadCubit, FileUploadState>(
+      listener: (context, state) {
+        if (state is FileUploadSuccess) {
+          Navigator.pop(context); // Close dialog on success
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Files uploaded successfully!")),
+          );
+        } else if (state is FileUploadFailure) {
+          print("Error: ${state.error}");
+          Navigator.pop(context); // Close dialog on failure
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: ${state.error}")),
+          );
+        }
+      },
+      child: AlertDialog(
+        title: const Text("Uploading Files"),
+        content: BlocBuilder<FileUploadCubit, FileUploadState>(
+          builder: (context, state) {
+            if (state is FileUploadInProgress) {
+              return const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 16),
+                ],
+              );
+            } else {
+              return const Text("Preparing upload...");
+            }
+          },
         ),
       ),
     );

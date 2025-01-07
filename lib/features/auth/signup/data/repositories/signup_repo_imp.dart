@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/auth/signup/data/model/userModel.dart';
@@ -13,7 +14,7 @@ class SignUpRepoImp extends SignUpRepo {
   @override
   Future<Either<Faliuer, SignupModel>> signUp(SignupModel signupModel) async{
     try {
-      var resp = await apiService.post(endpoint: "register", data: signupModel.toJson());
+      var resp = await apiService.post(endpoint: Constant.registerEndpoint, data: signupModel.toJson(),token:false);
       if (resp['msg'] != null) {
         if (resp['msg'] == 'User created successfully') {
           SignupModel signupResponse = SignupModel.fromJson(resp);

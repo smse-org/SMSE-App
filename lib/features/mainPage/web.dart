@@ -8,13 +8,11 @@ import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cub
 import 'package:smse/features/home/presentation/screen/homapage.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
-
 class WebLayout extends StatefulWidget {
   final VoidCallback toggleTheme;
   final ThemeMode themeMode;
-  final Widget child; // Render the current page
 
-  const WebLayout({super.key, required this.toggleTheme, required this.themeMode, required this.child});
+  const WebLayout({super.key, required this.toggleTheme, required this.themeMode});
 
   @override
   _WebLayoutState createState() => _WebLayoutState();
@@ -22,6 +20,7 @@ class WebLayout extends StatefulWidget {
 
 class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late PageController _pageController;
 
   final List<Widget> _pages = [
     HomePage(),
@@ -34,6 +33,18 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _pageController = PageController();
+
+    // Listen for tab controller changes to update PageView
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        _pageController.animateToPage(
+          _tabController.index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+      }
+    });
   }
 
   Future<void> _searchAndUploadFiles() async {
@@ -78,9 +89,7 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       floatingActionButton: FloatingActionButton(
         onPressed: _searchAndUploadFiles,
         backgroundColor: Colors.blue,
@@ -89,17 +98,14 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
       appBar: AppBar(
         leading: Image.asset(Constant.logoImage),
         actions: [
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, themeMode) {
-              return IconButton(
-                icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
-                onPressed: () => context.read<ThemeCubit>().toggleTheme(), // Toggle theme using ThemeCubit
-              );
-            },
-          ),
+          BlocBuilder<ThemeCubit, ThemeMode>(builder: (context, themeMode) {
+            return IconButton(
+              icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+              onPressed: () => context.read<ThemeCubit>().toggleTheme(), // Toggle theme using ThemeCubit
+            );
+          }),
         ],
         title: const Text("SMSE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -110,7 +116,13 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
           ],
         ),
       ),
-      body: widget.child, // Use the child passed to this layout
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          _tabController.index = index; // Sync PageView with TabController
+        },
+        children: _pages,
+      ),
     );
   }
 }

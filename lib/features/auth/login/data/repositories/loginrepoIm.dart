@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/core/utililes/cachedSP.dart';
@@ -14,11 +15,11 @@ class LoginRepoImp extends LoginRepo{
   @override
   Future<Either<Faliuer, String>> login(UserModel userModel) async {
     try {
-      final response = await apiService.post(endpoint: 'login', data: userModel.toJson());
+      final response = await apiService.post(endpoint: Constant.loginEndpoint, data: userModel.toJson(),token:false);
       final token = response['access_token'];
 
 
-      CachedData.storeData("toke", token);
+      CachedData.storeData(Constant.token, token);
 
       return Right(token);
     } on DioException catch (e) {

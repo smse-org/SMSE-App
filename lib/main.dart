@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/bloc_observer.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/utililes/cachedSP.dart';
 import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
@@ -7,6 +8,8 @@ import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cub
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await CachedData.cachInit(); // Ensure SharedPreferences is initialized
+  Bloc.observer = Observe();
+
   runApp(const MyApp());
 }
 

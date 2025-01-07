@@ -15,6 +15,7 @@ class ResponsiveLoginPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => LoginCubit(LoginRepoImp(ApiService(Dio()))),
       child: LayoutBuilder(
+
         builder: (context, constraints) {
           if (constraints.maxWidth > 600) {
             // Render web/desktop version

@@ -22,7 +22,7 @@ class ResponsiveHome extends StatelessWidget {
           return WebLayout(
             toggleTheme: toggleTheme,
             themeMode: themeMode,
-            child: child, // Pass child to WebLayout
+
           );
         } else {
           return MobileLayout(
