@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/features/auth/signup/data/model/userModel.dart';
 import 'package:smse/features/auth/signup/data/repositories/signup_repo.dart';

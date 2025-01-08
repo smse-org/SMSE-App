@@ -8,7 +8,6 @@ import 'package:smse/features/auth/login/data/model/user.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_cubit.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_state.dart';
 
-import '../../../../../constants.dart';
 class MobileLoginPage extends StatelessWidget {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();

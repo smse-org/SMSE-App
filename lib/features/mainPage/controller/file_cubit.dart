@@ -1,6 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
-import 'package:equatable/equatable.dart';
 import 'package:smse/features/mainPage/controller/file_state.dart';
 import 'package:smse/features/mainPage/repo/file_uploadrepo.dart';
 

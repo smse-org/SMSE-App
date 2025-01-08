@@ -32,9 +32,11 @@ class FileUploadRepoImp extends FileUploadRep {
         data: formatData,
         token: true,
       );
+      print("Response Data: $response"); // Debug log
 
-      if (response['message'] == "Content created successfully") {
-        return Right(ContentModel.fromJson(response));
+
+      if (response['message'] == "Content created successfully" && response['content'] != null) {
+        return Right(ContentModel.fromJson(response['content']));
       } else {
         return Left(ServerFailuer("Unexpected response format"));
       }

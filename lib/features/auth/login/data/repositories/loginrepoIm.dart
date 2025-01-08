@@ -17,9 +17,12 @@ class LoginRepoImp extends LoginRepo{
     try {
       final response = await apiService.post(endpoint: Constant.loginEndpoint, data: userModel.toJson(),token:false);
       final token = response['access_token'];
+      final refreshToken = response['refresh_token'];
 
 
-      CachedData.storeData(Constant.token, token);
+      CachedData.storeData(Constant.accessToekn, token);
+      CachedData.storeData(Constant.refreshToken, refreshToken);
+
 
       return Right(token);
     } on DioException catch (e) {

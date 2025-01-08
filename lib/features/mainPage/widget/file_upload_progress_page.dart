@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/mainPage/controller/file_cubit.dart';
 import 'package:smse/features/mainPage/controller/file_state.dart';
 
@@ -15,13 +17,13 @@ class FileUploadProgressDialog extends StatelessWidget {
     return BlocListener<FileUploadCubit, FileUploadState>(
       listener: (context, state) {
         if (state is FileUploadSuccess) {
-          Navigator.pop(context); // Close dialog on success
+          GoRouter.of(context).pushReplacement(AppRouter.KHome); // Close dialog on success
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Files uploaded successfully!")),
           );
         } else if (state is FileUploadFailure) {
           print("Error: ${state.error}");
-          Navigator.pop(context); // Close dialog on failure
+          GoRouter.of(context).pushReplacement(AppRouter.KHome); // Close dialog on failure
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error: ${state.error}")),
           );

@@ -6,8 +6,9 @@ class Constant{
   static const int greenColor= 0xFF22C55E;
   static const int darkGreyColor= 0xFF6B7280;
   static const String logoImage = "assets/image/logo.png";
-  static const String token = "token";
-  static const String loginEndpoint = "login";
-  static const String registerEndpoint = "register";
+  static const String accessToekn = "acesstoken";
+  static const String refreshToken="refreshtoken";
+  static const String loginEndpoint = "auth/login";
+  static const String registerEndpoint = "auth/register";
   static const String profileEndpoint = "users/me";
 }

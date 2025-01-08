@@ -14,7 +14,7 @@ class ApiService {
       final response = await _dio.get("$_baseUrl$endpoint",
       options: Options(
         headers: {
-         'Authorization': 'Bearer ${await CachedData.getData(Constant.token)}',
+         'Authorization': 'Bearer ${await CachedData.getData(Constant.accessToekn)}',
         },)
 
       );
@@ -45,7 +45,7 @@ class ApiService {
                 headers: {
             'Content-Type': 'multipart/form-data',
                   'Authorization': 'Bearer ${await CachedData.getData(
-                      Constant.token)}',
+                      Constant.accessToekn)}',
                 },
             ),
           onSendProgress: onSendProgress

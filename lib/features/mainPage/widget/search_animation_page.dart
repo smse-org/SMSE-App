@@ -7,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/mainPage/controller/file_cubit.dart';
 import 'package:smse/features/mainPage/repo/file_upload_repo_imp.dart';
-import 'package:smse/features/mainPage/repo/file_uploadrepo.dart';
 import 'package:smse/features/mainPage/widget/file_upload_progress_page.dart';
 
 class SearchAnimationPage extends StatefulWidget {

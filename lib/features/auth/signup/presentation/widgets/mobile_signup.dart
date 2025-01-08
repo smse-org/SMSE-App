@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/core/components/custom_button.dart';
 import 'package:smse/core/components/textFeildCustom.dart';
+import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/auth/signup/data/model/userModel.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_cubit.dart';
@@ -28,21 +29,21 @@ class MobileSignup extends StatelessWidget {
         child: BlocConsumer<SignupCubit,SignUpState>(
           listener: (context,state){
             if (state is SignupFailureState) {
-              GoRouter.of(context).pushReplacement(AppRouter.KLogin);
-
               print(state.message);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("Signup Successfully"),
+              ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+                content: Text(ServerFailuer(state.message).errMessage),
 
               ));
             }
 
             if( state is SignupSuccessState ){
-              print(state.signupModel);
+              GoRouter.of(context).pushReplacement(AppRouter.KLogin);
+
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("faild"),
+                content: Text("Signup Successfully"),
 
               ));
+
             }
           },
           builder: (context,state) {

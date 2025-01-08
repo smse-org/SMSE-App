@@ -1,5 +1,3 @@
-import 'package:equatable/equatable.dart';
-import 'package:smse/features/auth/login/data/model/user.dart';
 
 abstract class LoginState {}
 

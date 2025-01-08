@@ -68,6 +68,12 @@ class ProfileContentMobile extends StatelessWidget {
               value: false,
               onChanged: (value) {},
             ),
+            ListTile(
+              title: const Text("All files Uploaded"),
+              leading: Icon(Icons.upload_file_sharp, color: Colors.grey[700]),
+              onTap: () {},
+            ),
+
             const SizedBox(height: 24),
 
             // Saved Searches
