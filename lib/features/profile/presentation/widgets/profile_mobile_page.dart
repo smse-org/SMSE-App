@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:smse/constants.dart';
+import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_cubit.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_state.dart';
 
@@ -71,7 +73,9 @@ class ProfileContentMobile extends StatelessWidget {
             ListTile(
               title: const Text("All files Uploaded"),
               leading: Icon(Icons.upload_file_sharp, color: Colors.grey[700]),
-              onTap: () {},
+              onTap: () {
+                GoRouter.of(context).push(AppRouter.kContetnPage);
+              },
             ),
 
             const SizedBox(height: 24),

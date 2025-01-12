@@ -13,7 +13,7 @@ class ContentModel {
     return ContentModel(
       id: json['id'],
       content_path: json['content_path'],
-      content_tag: json['content_tag'] ?? true,
+      content_tag: json['content_tag'] ?? false,
     );
   }
 

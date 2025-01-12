@@ -34,6 +34,7 @@ class ApiService {
     required String endpoint,
     required dynamic data,
     bool? token=false,
+    ResponseType ?responseType,
     Function(int sent, int total)? onSendProgress,
 
   }) async {
@@ -47,6 +48,7 @@ class ApiService {
                   'Authorization': 'Bearer ${await CachedData.getData(
                       Constant.accessToekn)}',
                 },
+              responseType: responseType ?? ResponseType.json,
             ),
           onSendProgress: onSendProgress
         );
@@ -72,6 +74,28 @@ class ApiService {
       } catch (e) {
         throw Exception('Error during POST request: $e');
       }
+    }
+  }
+
+
+  // DELETE request
+  Future<Map<String, dynamic>> delete({required String endpoint}) async {
+    try {
+      final response = await _dio.delete("$_baseUrl$endpoint",
+          options: Options(
+            headers: {
+              'Authorization': 'Bearer ${await CachedData.getData(Constant.accessToekn)}',
+            },
+          )
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('Failed to delete data');
+      }
+    } catch (e) {
+      throw Exception('Error during DELETE request: $e');
     }
   }
 }

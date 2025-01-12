@@ -9,6 +9,7 @@ import 'package:smse/features/mainPage/widget/search_animation_page.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
 import 'package:smse/features/splash/splash_view.dart';
+import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
 
 abstract class AppRouter {
   static const String KHome = '/home';
@@ -18,6 +19,7 @@ abstract class AppRouter {
   static const String KLogin = '/login';
   static const String KSignUp = '/signup';
   static const String KSearchAnimation = '/search-animation';
+  static const String kContetnPage ="/content";
   static late final Function toggleTheme; // Declare toggleTheme as a late variable
 
   static final router = GoRouter(
@@ -66,6 +68,12 @@ abstract class AppRouter {
           GoRoute(
             path: KProfile,
             builder: (context, state) =>  ProfilePage(),
+          ),
+
+
+          GoRoute(
+            path: kContetnPage,
+            builder: (context, state) =>  const ContentPage(),
           ),
         ],
       ),
