@@ -13,17 +13,20 @@ class ResponsiveLoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => LoginCubit(LoginRepoImp(ApiService(Dio()))),
-      child: LayoutBuilder(
+      child: Theme(
+        data:  ThemeData.light(),
+        child: LayoutBuilder(
 
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            // Render web/desktop version
-            return WebLoginPage();
-          } else {
-            // Render mobile version
-            return SafeArea(child: MobileLoginPage());
-          }
-        },
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              // Render web/desktop version
+              return WebLoginPage();
+            } else {
+              // Render mobile version
+              return SafeArea(child: MobileLoginPage());
+            }
+          },
+        ),
       ),
     );
   }

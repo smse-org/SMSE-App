@@ -28,7 +28,7 @@ class LoginRepoImp extends LoginRepo{
     } on DioException catch (e) {
       return Left(ServerFailuer.fromDioError(e));
     } catch (e) {
-      return Left(ServerFailuer(e.toString()));
+      return Left(ServerFailuer.fromResponse(e.hashCode, e));
     }
   }
 }

@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/features/profile/data/repositories/logout/logout_repo_imp.dart';
 import 'package:smse/features/profile/data/repositories/profile_repo_imp.dart';
+import 'package:smse/features/profile/presentation/controller/cubit/logoutCubit/logout_cubit.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_cubit.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_state.dart';
 import 'package:smse/features/profile/presentation/widgets/profile_mobile_page.dart';
@@ -11,8 +13,16 @@ import 'package:smse/features/profile/presentation/widgets/profile_web_page.dart
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProfileCubit(ProfilRepoImp(ApiService(Dio()))),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+        create: (context) => ProfileCubit(ProfilRepoImp(ApiService(Dio()))),
+    ),
+        BlocProvider(
+          create: (context) => LogoutCubit(LogoutRepoImp(ApiService(Dio()))),
+        ),
+      ],
+
       child: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) {
         },

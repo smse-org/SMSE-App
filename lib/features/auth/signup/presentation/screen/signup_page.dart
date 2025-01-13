@@ -13,16 +13,19 @@ class SignupPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return  BlocProvider(
       create: (context) => SignupCubit(SignUpRepoImp(ApiService(Dio()))),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            // Render web/desktop version
-            return  WebSignup();
-          } else {
-            // Render mobile version
-            return SafeArea(child: MobileSignup());
-          }
-        },
+      child: Theme(
+        data: ThemeData.light(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              // Render web/desktop version
+              return  WebSignup();
+            } else {
+              // Render mobile version
+              return SafeArea(child: MobileSignup());
+            }
+          },
+        ),
       ),
     );
   }

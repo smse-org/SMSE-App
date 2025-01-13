@@ -520,6 +520,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
+  pushable_button:
+    dependency: "direct main"
+    description:
+      name: pushable_button
+      sha256: dc3402b202677a2f181d6ec8504282e1c9a00cba6f4330579de68439cf34a99c
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   shared_preferences:
     dependency: "direct main"
     description:

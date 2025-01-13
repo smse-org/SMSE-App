@@ -9,46 +9,60 @@ abstract class Faliuer {
 class ServerFailuer extends Faliuer {
   ServerFailuer(super.errMessage);
 
-  factory ServerFailuer.fromDioError(DioError dioError) {
+  factory ServerFailuer.fromDioError(DioException dioError) {
     switch (dioError.type) {
       case DioExceptionType.connectionTimeout:
-        return ServerFailuer("Connection timeout with Api Server");
+        return ServerFailuer("Connection timeout with API Server");
       case DioExceptionType.sendTimeout:
-        return ServerFailuer("Send timeout with Api Server");
+        return ServerFailuer("Send timeout with API Server");
       case DioExceptionType.receiveTimeout:
-        return ServerFailuer("Receive timeout with Api Server");
-
+        return ServerFailuer("Receive timeout with API Server");
       case DioExceptionType.badResponse:
-        return ServerFailuer.fromResponse(
-            dioError.response!.statusCode!, dioError.response!.data!);
-
+        if (dioError.response != null) {
+          return ServerFailuer.fromResponse(
+              dioError.response!.statusCode, dioError.response!.data);
+        }
+        return ServerFailuer("Received an invalid response from the server.");
       case DioExceptionType.cancel:
-        return ServerFailuer("request to data was canceled");
-
+        return ServerFailuer("Request was canceled.");
       case DioExceptionType.unknown:
-        if (dioError.message!.contains("SocketException")) {
+        if (dioError.message?.contains("SocketException") ?? false) {
           return ServerFailuer("No Internet Connection");
         }
-        return ServerFailuer("Unexpected error , please try again later");
-
+        return ServerFailuer("Unexpected error, please try again later.");
       case DioExceptionType.badCertificate:
-        return ServerFailuer("Unexpected error , please try again later");
-
+        return ServerFailuer("Unexpected certificate error.");
       case DioExceptionType.connectionError:
-        return ServerFailuer("No Internet Connection");
+        return ServerFailuer("No Internet Connection.");
+      default:
+        return ServerFailuer("Unexpected error occurred.");
     }
-
   }
 
-  factory ServerFailuer.fromResponse(int statusCode, dynamic respnose) {
-    if (statusCode == 400 || statusCode == 401 || statusCode == 403) {
-      return ServerFailuer(respnose["error"]["message"]);
-    } else if (statusCode == 404) {
-      return ServerFailuer("Your request not found , Please try again later");
-    } else if (statusCode == 500) {
-      return ServerFailuer("Internal server error , Please try again later");
-    } else {
-      return ServerFailuer("Opps there was an error , please try again");
+  factory ServerFailuer.fromResponse(int? statusCode, dynamic response) {
+    if (response == null) {
+      return ServerFailuer("Unexpected error occurred, please try again later.");
     }
+
+    String errorMessage = "Invalid credentials";
+    if (response is Map<String, dynamic>) {
+      // Handle different error response structures
+      errorMessage = response["error"]?["message"] ??
+          response["msg"] ??
+          response["message"] ??
+          errorMessage;
+    }
+
+    if (statusCode != null) {
+      if (statusCode == 400 || statusCode == 401 || statusCode == 403) {
+        return ServerFailuer(errorMessage);
+      } else if (statusCode == 404) {
+        return ServerFailuer("Your request was not found. Please try again later.");
+      } else if (statusCode == 500) {
+        return ServerFailuer("Internal server error. Please try again later.");
+      }
+    }
+
+    return ServerFailuer(errorMessage);
   }
 }

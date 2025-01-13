@@ -16,6 +16,7 @@ class MobileLoginPage extends StatelessWidget {
     final loginCubit = BlocProvider.of<LoginCubit>(context);
 
     return Scaffold(
+
       appBar: AppBar(
         title: const Text('Login',style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold)),
       ),

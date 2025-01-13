@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pushable_button/pushable_button.dart';
 import 'package:smse/constants.dart';
+import 'package:smse/core/routes/app_router.dart';
+import 'package:smse/features/profile/presentation/controller/cubit/logoutCubit/logout_cubit.dart';
+import 'package:smse/features/profile/presentation/controller/cubit/logoutCubit/logout_state.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_cubit.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_state.dart';
+import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
 
 class ProfileContentWeb extends StatelessWidget {
   const ProfileContentWeb({super.key});
@@ -79,7 +85,13 @@ class ProfileContentWeb extends StatelessWidget {
                       onChanged: (value) {},
                     ),
                     const SizedBox(height: 24),
-
+                    ListTile(
+                      title: const Text("All files Uploaded"),
+                      leading: Icon(Icons.upload_file_sharp, color: Colors.grey[700]),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ContentPage()));
+                      },
+                    ),
                     // Saved Searches
                     const Text(
                       "Saved Searches",
@@ -100,26 +112,48 @@ class ProfileContentWeb extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // Feedback & Support
-                    const Center(
-                      child: Text(
-                        "Feedback & Support",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                    // const Center(
+                    //   child: Text(
+                    //     "Feedback & Support",
+                    //     style: TextStyle(
+                    //         fontSize: 18, fontWeight: FontWeight.bold),
+                    //   ),
+                    // ),
                     const SizedBox(height: 16),
                     Center(
                       child: SizedBox(
                         width: MediaQuery.sizeOf(context).width * 0.5,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[300],
-                            foregroundColor: Colors.black,
-                            minimumSize: const Size(200, 50),
-                          ),
-                          child: const Center(
-                            child: Text("Send Feedback"),
+                        // child: ElevatedButton(
+                        //   onPressed: () {},
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor: Colors.grey[300],
+                        //     foregroundColor: Colors.black,
+                        //     minimumSize: const Size(200, 50),
+                        //   ),
+                        //   child: const Center(
+                        //     child: Text("Send Feedback"),
+                        //   ),
+                        // ),
+                        child: BlocListener<LogoutCubit,LogoutState>(
+
+                          listener: ( context,  state) {
+                            if(state is LogoutFailure){
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: ${state.message}')),
+                              );
+                            }else if(state is LogoutSuccess){
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Logout Successfully')),
+                              );
+                              GoRouter.of(context).go(AppRouter.KLogin);
+                            }
+                          },
+                          child: PushableButton(hslColor: HSLColor.fromColor(Colors.blueAccent), height: 50,
+                            child: const Text('Logout', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                            onPressed: (){
+                              BlocProvider.of<LogoutCubit>(context).logout();
+
+                            },
                           ),
                         ),
                       ),
