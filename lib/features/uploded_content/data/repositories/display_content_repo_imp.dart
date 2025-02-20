@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/mainPage/model/content.dart';
@@ -14,8 +15,12 @@ class DisplayContentRepoImp extends DisplayContentRepo{
     try {
       await apiService.delete(endpoint: 'contents/$id');
       return const Right(null);
+    }on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      return Left(ServerFailuer( e.toString()));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 
@@ -32,8 +37,12 @@ class DisplayContentRepoImp extends DisplayContentRepo{
       final List<dynamic> contentData = response['contents'];
       final contents = contentData.map((data) => ContentModel.fromJson(data)).toList();
       return Right(contents);
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      return Left(ServerFailuer( e.toString()));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 

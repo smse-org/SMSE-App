@@ -28,12 +28,12 @@ class SignUpRepoImp extends SignUpRepo {
 
       return Left(ServerFailuer('Unknown error occurred'));
 
-    } on DioException catch (e) {
-      // Handle Dio errors
-      return Left(ServerFailuer(e.response?.data['msg'] ?? 'Error during request'));
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      // Handle other exceptions
-      return Left(ServerFailuer(e.toString()));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 }

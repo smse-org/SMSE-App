@@ -3,6 +3,10 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 
 class SearchBarCustom extends StatefulWidget {
+  final Function(String) onSearch;
+
+  const SearchBarCustom({super.key, required this.onSearch});
+
   @override
   _SearchBarCustomState createState() => _SearchBarCustomState();
 }
@@ -11,7 +15,11 @@ class _SearchBarCustomState extends State<SearchBarCustom> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
   final TextEditingController _controller = TextEditingController();
-
+  void _handleSearch() {
+    if (_controller.text.isNotEmpty) {
+      widget.onSearch(_controller.text);
+    }
+  }
   Future<bool> _requestMicrophonePermission() async {
     var status = await Permission.microphone.status;
     if (status.isDenied) {
@@ -27,6 +35,7 @@ class _SearchBarCustomState extends State<SearchBarCustom> {
       setState(() {
         _isListening = false;
       });
+      _handleSearch();
       await _speech.stop();
     } else {
       final hasPermission = await _requestMicrophonePermission();
@@ -65,6 +74,7 @@ class _SearchBarCustomState extends State<SearchBarCustom> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
+      onSubmitted: (_) => _handleSearch(),
       decoration: InputDecoration(
         hintText: "Find a sunset beach photo or Research on black holes",
         prefixIcon: const Icon(Icons.search),

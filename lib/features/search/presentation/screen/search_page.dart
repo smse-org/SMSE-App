@@ -1,27 +1,44 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/features/search/data/model/search_results.dart';
+import 'package:smse/features/search/data/repositories/search_repo_imp.dart';
+import 'package:smse/features/search/presentation/controller/search_cubit.dart';
+import 'package:smse/features/search/presentation/controller/search_state.dart';
 import 'package:smse/features/search/presentation/widgets/mobile_search_page.dart';
 import 'package:smse/features/search/presentation/widgets/search_page_web.dart';
 
 class SearchPage extends StatelessWidget {
+  final List<SearchResult>? searchResults;
+
+  const SearchPage({Key? key, this.searchResults}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Search Results', style: TextStyle(fontSize: 24 , fontWeight: FontWeight.bold),),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 600) {
-            // Mobile view
-            return const SafeArea(child: MobileSearchView());
-          } else if (constraints.maxWidth < 800) {
-            // Web/Desktop view
-            return const WebSearchView(number: 2);
-          }else{
-            return const WebSearchView(number: 3);
-          }
-        },
+    return BlocProvider(
+      create: (context) => SearchCubit(
+        SearchRepositoryImpl(ApiService(Dio())),
+      )..emit(SearchSucsess(searchResults ?? [])),
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text(
+            'Search Results',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 600) {
+              return const SafeArea(child: MobileSearchView());
+            } else if (constraints.maxWidth < 800) {
+              return const WebSearchView(number: 2);
+            } else {
+              return const WebSearchView(number: 3);
+            }
+          },
+        ),
       ),
     );
   }

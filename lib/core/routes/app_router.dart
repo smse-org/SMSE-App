@@ -7,6 +7,7 @@ import 'package:smse/features/home/presentation/screen/homapage.dart';
 import 'package:smse/features/mainPage/responsive_page.dart';
 import 'package:smse/features/mainPage/widget/search_animation_page.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
+import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
 import 'package:smse/features/splash/splash_view.dart';
 import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
@@ -55,11 +56,14 @@ abstract class AppRouter {
         routes: [
           GoRoute(
             path: KHome,
-            builder: (context, state) =>  HomePage(),
+            builder: (context, state) =>  const HomePage(),
           ),
           GoRoute(
             path: KSearch,
-            builder: (context, state) =>  SearchPage(),
+            builder: (context, state){
+              final searchResults = state.extra as List<SearchResult>?;
+              return SearchPage(searchResults: searchResults);
+            },
           ),
           GoRoute(
             path: KFavorites,

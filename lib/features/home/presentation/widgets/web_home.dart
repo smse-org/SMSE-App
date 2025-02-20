@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/features/home/presentation/screen/home_page_content.dart';
 import 'package:smse/features/home/presentation/widgets/searchbar.dart';
+import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 
 import '../screen/homapage.dart';
 import 'category_icon.dart';
@@ -25,7 +28,11 @@ class WebHomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-                 SearchBarCustom(),
+                 SearchBarCustom(
+                   onSearch: (query) {
+                     context.read<SearchCubit>().search(query);
+                   },
+                 ),
                 const SizedBox(height: 30),
                 CategoryIcons(),
                 const SizedBox(height: 30),
