@@ -14,7 +14,7 @@ class SignupPage extends StatelessWidget {
     return  BlocProvider(
       create: (context) => SignupCubit(SignUpRepoImp(ApiService(Dio()))),
       child: Theme(
-        data: ThemeData.light(),
+        data: ThemeData.light().copyWith(scaffoldBackgroundColor: Colors.white),
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
@@ -22,7 +22,7 @@ class SignupPage extends StatelessWidget {
               return  WebSignup();
             } else {
               // Render mobile version
-              return SafeArea(child: MobileSignup());
+              return const SafeArea(child: MobileSignup());
             }
           },
         ),

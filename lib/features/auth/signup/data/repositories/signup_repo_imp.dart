@@ -12,22 +12,19 @@ class SignUpRepoImp extends SignUpRepo {
   SignUpRepoImp(this.apiService);
 
   @override
-  Future<Either<Faliuer, SignupModel>> signUp(SignupModel signupModel) async{
+  Future<Either<Faliuer, SignupModel>> signUp(SignupModel signupModel) async {
     try {
-      var resp = await apiService.post(endpoint: Constant.registerEndpoint, data: signupModel.toJson(),token:false);
-      if (resp['msg'] != null) {
-        if (resp['msg'] == 'User created successfully') {
-          SignupModel signupResponse = SignupModel.fromJson(resp);
-          return Right(signupResponse);
-        } else {
-          return Left(ServerFailuer(resp['msg']));
-        }
+      final response = await apiService.post(
+        endpoint: Constant.registerEndpoint,
+        data: signupModel.toJson(),
+        token: false,
+      );
+
+      if (response['msg'] == 'User created successfully') {
+        // ✅ Instead of parsing a user model from the response, just return the original signupModel
+        return Right(signupModel);
       }
-
-
-
-      return Left(ServerFailuer('Unknown error occurred'));
-
+      return Left(ServerFailuer(response['msg'] ?? 'Signup failed'));
     } on ServerFailuer catch (failure) {
       return Left(failure);
     } on DioException catch (dioError) {
@@ -37,4 +34,3 @@ class SignUpRepoImp extends SignUpRepo {
     }
   }
 }
-

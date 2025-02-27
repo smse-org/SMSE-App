@@ -19,16 +19,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ThemeCubit()..loadTheme(), // Initialize ThemeCubit and load theme preference
+      create: (_) => ThemeCubit()..loadTheme(), // Load theme on app start
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp.router(
             routerConfig: AppRouter.router,
             debugShowCheckedModeBanner: false,
-            title: 'Responsive Navigation with Theme Switching',
-            theme: ThemeData.light(),
-            darkTheme: ThemeData.dark(),
-            themeMode: themeMode, // Apply the selected theme mode
+            title: 'SMSE APP',
+            theme: ThemeData.light().copyWith(
+              scaffoldBackgroundColor: Colors.white,
+            ),
+            darkTheme: ThemeData.dark().copyWith(
+              scaffoldBackgroundColor: Colors.black, // Custom dark mode background
+            ),
+            themeMode: themeMode, // Apply user-selected theme mode
           );
         },
       ),

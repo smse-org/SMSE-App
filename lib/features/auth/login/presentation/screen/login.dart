@@ -14,7 +14,9 @@ class ResponsiveLoginPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => LoginCubit(LoginRepoImp(ApiService(Dio()))),
       child: Theme(
-        data:  ThemeData.light(),
+        data:  ThemeData.light().copyWith(
+          scaffoldBackgroundColor: Colors.white,
+        ),
         child: LayoutBuilder(
 
           builder: (context, constraints) {
