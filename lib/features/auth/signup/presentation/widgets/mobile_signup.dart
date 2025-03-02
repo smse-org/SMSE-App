@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/core/components/custom_button.dart';
-import 'package:smse/core/components/textFeildCustom.dart';
+import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/utililes/validate_helper.dart';
-import 'package:smse/features/auth/signup/data/model/userModel.dart';
+import 'package:smse/features/auth/signup/data/model/user_model.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_cubit.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_state.dart';
 
@@ -16,10 +16,10 @@ class MobileSignup extends StatefulWidget {
   const MobileSignup({super.key});
 
   @override
-  _MobileSignupState createState() => _MobileSignupState();
+  MobileSignupState createState() => MobileSignupState();
 }
 
-class _MobileSignupState extends State<MobileSignup> {
+class MobileSignupState extends State<MobileSignup> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -55,7 +55,7 @@ class _MobileSignupState extends State<MobileSignup> {
                 SnackBar(content: Text(ServerFailuer(state.message).errMessage)),
               );
             } else if (state is SignupSuccessState) {
-              GoRouter.of(context).pushReplacement(AppRouter.KLogin);
+              GoRouter.of(context).pushReplacement(AppRouter.login);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Signup Successfully")),
               );
@@ -106,7 +106,6 @@ class _MobileSignupState extends State<MobileSignup> {
   }
   bool _validateFields(BuildContext context) {
     String email = emailController.text.trim();
-    String password = passwordController.text.trim();
     String username=nameController.text;
     if (passwordController.text.isEmpty || emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

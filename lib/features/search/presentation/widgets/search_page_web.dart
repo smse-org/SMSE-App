@@ -7,7 +7,7 @@ import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
 
 class WebSearchView extends StatelessWidget {
-  const WebSearchView({required this.number});
+  const WebSearchView({super.key, required this.number});
   final int number;
 
   @override

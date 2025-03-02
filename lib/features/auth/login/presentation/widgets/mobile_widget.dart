@@ -3,18 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/core/components/custom_button.dart';
-import 'package:smse/core/components/textFeildCustom.dart';
+import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/auth/login/data/model/user.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_cubit.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_state.dart';
 
 class MobileLoginPage extends StatefulWidget {
+  const MobileLoginPage({super.key});
+
   @override
-  _MobileLoginPageState createState() => _MobileLoginPageState();
+  MobileLoginPageState createState() => MobileLoginPageState();
 }
 
-class _MobileLoginPageState extends State<MobileLoginPage> {
+class MobileLoginPageState extends State<MobileLoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -50,7 +52,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
         child: BlocConsumer<LoginCubit, LoginState>(
           listener: (context, state) {
             if (state is LoginSuccessState) {
-              GoRouter.of(context).pushReplacement(AppRouter.KHome);
+              GoRouter.of(context).pushReplacement(AppRouter.home);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text("Login Successfully"),
               ));
@@ -98,7 +100,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                     color: Colors.black87,
                     text: 'Create Account',
                     colorText: Colors.white,
-                    onPressed: () => GoRouter.of(context).push(AppRouter.KSignUp),
+                    onPressed: () => GoRouter.of(context).push(AppRouter.signUp),
                   ),
 
                 ],
@@ -110,8 +112,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
     );
   }
   bool _validateFields(BuildContext context) {
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
+
 
     if (passwordController.text.isEmpty || emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

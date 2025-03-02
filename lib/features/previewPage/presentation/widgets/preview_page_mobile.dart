@@ -10,10 +10,10 @@ class FilePreviewMobile extends StatefulWidget {
   const FilePreviewMobile({super.key});
 
   @override
-  _FilePreviewMobileState createState() => _FilePreviewMobileState();
+  FilePreviewMobileState createState() => FilePreviewMobileState();
 }
 
-class _FilePreviewMobileState extends State<FilePreviewMobile> {
+class FilePreviewMobileState extends State<FilePreviewMobile> {
   double downloadProgress = 0;
   bool isDownloading = false;
   String downloadMessage = '';

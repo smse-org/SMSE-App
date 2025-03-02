@@ -10,13 +10,13 @@ import 'package:smse/features/mainPage/repo/file_upload_repo_imp.dart';
 import 'package:smse/features/mainPage/widget/file_upload_progress_page.dart';
 
 class SearchAnimationPage extends StatefulWidget {
-  const SearchAnimationPage({Key? key}) : super(key: key);
+  const SearchAnimationPage({super.key});
 
   @override
-  _SearchAnimationPageState createState() => _SearchAnimationPageState();
+  SearchAnimationPageState createState() => SearchAnimationPageState();
 }
 
-class _SearchAnimationPageState extends State<SearchAnimationPage> {
+class SearchAnimationPageState extends State<SearchAnimationPage> {
   @override
   void initState() {
     super.initState();

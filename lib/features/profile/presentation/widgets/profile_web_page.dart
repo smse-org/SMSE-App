@@ -145,7 +145,7 @@ class ProfileContentWeb extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Logout Successfully')),
                               );
-                              GoRouter.of(context).go(AppRouter.KLogin);
+                              GoRouter.of(context).go(AppRouter.login);
                             }
                           },
                           child: PushableButton(hslColor: HSLColor.fromColor(Colors.blueAccent), height: 50,

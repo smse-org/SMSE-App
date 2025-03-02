@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smse/features/auth/signup/data/model/userModel.dart';
+import 'package:smse/features/auth/signup/data/model/user_model.dart';
 import 'package:smse/features/auth/signup/data/repositories/signup_repo.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_state.dart';
 

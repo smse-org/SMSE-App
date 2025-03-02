@@ -5,14 +5,14 @@ class ContentCardWeb extends StatelessWidget {
   final String title;
   final int relevanceScore;
 
-  const ContentCardWeb({required this.title, required this.relevanceScore});
+  const ContentCardWeb({super.key, required this.title, required this.relevanceScore});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         // Navigate to the details page
-        Navigator.push(context, MaterialPageRoute(builder: (context) =>  FileViewerPage()));
+        Navigator.push(context, MaterialPageRoute(builder: (context) =>  const FileViewerPage()));
       },
       child: Card(
         child: Padding(

@@ -10,6 +10,8 @@ import '../widgets/web_home.dart';
 
 
 class HomePageContent extends StatelessWidget {
+  const HomePageContent({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SearchCubit,SearchState>(
@@ -21,17 +23,17 @@ class HomePageContent extends StatelessWidget {
             ),
           );
         }else if (state is SearchSucsess) {
-         GoRouter.of(context).go(AppRouter.KSearch,extra :state.searchResults);
+         GoRouter.of(context).go(AppRouter.search,extra :state.searchResults);
         }
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < 600) {
             // Display mobile UI if the screen width is less than 600
-            return SafeArea(child: MobileHomePage());
+            return const SafeArea(child: MobileHomePage());
           } else {
             // Display web UI if the screen width is 600 or more
-            return WebHomePage();
+            return const WebHomePage();
           }
         },
       ),
@@ -46,7 +48,7 @@ class HomePageContent extends StatelessWidget {
 class SectionHeader extends StatelessWidget {
   final String title;
 
-  SectionHeader(this.title);
+  const SectionHeader(this.title, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,8 @@ class SectionHeader extends StatelessWidget {
 }
 
 class RecentSearches extends StatelessWidget {
+  const RecentSearches({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const Column(
@@ -75,6 +79,8 @@ class RecentSearches extends StatelessWidget {
 }
 
 class SearchSuggestions extends StatelessWidget {
+  const SearchSuggestions({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const Column(

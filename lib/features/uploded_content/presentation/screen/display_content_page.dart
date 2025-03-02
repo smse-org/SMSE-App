@@ -10,14 +10,14 @@ class ContentDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final extension = content.content_path.split('.').last.toLowerCase();
+    final extension = content.contentPath.split('.').last.toLowerCase();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(content.content_path.split('/').last),
+        title: Text(content.contentPath.split('/').last),
       ),
       body: Center(
-        child: _buildContentDetail(extension, content.content_path),
+        child: _buildContentDetail(extension, content.contentPath),
       ),
     );
   }

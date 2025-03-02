@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CategoryIcons extends StatelessWidget {
+  const CategoryIcons({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         IconCategory(icon: Icons.article, label: "Text"),
@@ -19,13 +21,13 @@ class IconCategory extends StatefulWidget {
   final IconData icon;
   final String label;
 
-  IconCategory({required this.icon, required this.label});
+  const IconCategory({super.key, required this.icon, required this.label});
 
   @override
-  _IconCategoryState createState() => _IconCategoryState();
+  IconCategoryState createState() => IconCategoryState();
 }
 
-class _IconCategoryState extends State<IconCategory> {
+class IconCategoryState extends State<IconCategory> {
   bool _isSelected = false;
 
   void _toggleSelection() {

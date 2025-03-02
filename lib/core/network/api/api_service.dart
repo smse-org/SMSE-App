@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
-import 'package:smse/core/utililes/cachedSP.dart';
+import 'package:smse/core/utililes/cached_sp.dart';
 
 class ApiService {
   final String _baseUrl = "https://smseai.me/api/v1/";

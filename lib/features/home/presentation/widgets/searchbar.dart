@@ -8,10 +8,10 @@ class SearchBarCustom extends StatefulWidget {
   const SearchBarCustom({super.key, required this.onSearch});
 
   @override
-  _SearchBarCustomState createState() => _SearchBarCustomState();
+  SearchBarCustomState createState() => SearchBarCustomState();
 }
 
-class _SearchBarCustomState extends State<SearchBarCustom> {
+class SearchBarCustomState extends State<SearchBarCustom> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
   final TextEditingController _controller = TextEditingController();

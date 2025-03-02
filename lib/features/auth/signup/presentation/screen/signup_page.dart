@@ -19,7 +19,7 @@ class SignupPage extends StatelessWidget {
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
               // Render web/desktop version
-              return  WebSignup();
+              return  const WebSignup();
             } else {
               // Render mobile version
               return const SafeArea(child: MobileSignup());

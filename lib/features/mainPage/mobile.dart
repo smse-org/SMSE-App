@@ -23,7 +23,7 @@ class MobileLayout extends StatelessWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () => GoRouter.of(context).push(AppRouter.KSearchAnimation), // Example navigation
+        onPressed: () => GoRouter.of(context).push(AppRouter.searchAnimation), // Example navigation
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80)),
         child: const Icon(Icons.add, color: Colors.white),

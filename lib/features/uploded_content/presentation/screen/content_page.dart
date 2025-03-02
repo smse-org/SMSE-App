@@ -10,7 +10,7 @@ import 'package:smse/features/uploded_content/presentation/controller/cubit/cont
 import 'package:smse/features/uploded_content/presentation/screen/display_content_page.dart';
 
 class ContentPage extends StatelessWidget {
-  const ContentPage({Key? key}) : super(key: key);
+  const ContentPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +70,8 @@ class ContentMobilePage extends StatelessWidget {
               return
                   Card(
                     child: ListTile(
-                      title: Text(content.content_path.split('/').last),
-                      subtitle: Text(content.content_tag ? "Tagged" : "Not Tagged"),
+                      title: Text(content.contentPath.split('/').last),
+                      subtitle: Text(content.contentTag ? "Tagged" : "Not Tagged"),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -114,7 +114,7 @@ class ContentMobilePage extends StatelessWidget {
 }
 
 class ContentWebPage extends StatelessWidget {
-  const ContentWebPage({Key? key}) : super(key: key);
+  const ContentWebPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -143,11 +143,11 @@ class ContentWebPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        content.content_path.split('/').last,
+                        content.contentPath.split('/').last,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      Text(content.content_tag ? "Tagged" : "Not Tagged"),
+                      Text(content.contentTag ? "Tagged" : "Not Tagged"),
                       const Spacer(),
                       buildActions(context, content),
                     ],

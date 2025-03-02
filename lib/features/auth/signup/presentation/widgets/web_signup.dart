@@ -4,16 +4,16 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/core/components/custom_button.dart';
-import 'package:smse/core/components/textFeildCustom.dart';
+import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/utililes/validate_helper.dart';
-import 'package:smse/features/auth/signup/data/model/userModel.dart';
+import 'package:smse/features/auth/signup/data/model/user_model.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_cubit.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_state.dart';
 
 class WebSignup extends StatefulWidget {
-   WebSignup({super.key});
+   const WebSignup({super.key});
 
   @override
   State<WebSignup> createState() => _WebSignupState();
@@ -46,7 +46,7 @@ class _WebSignupState extends State<WebSignup> {
           child: BlocConsumer<SignupCubit,SignUpState>(
             listener: (context,state){
               if(state is SignupFailureState){
-                GoRouter.of(context).pushReplacement(AppRouter.KLogin);
+                GoRouter.of(context).pushReplacement(AppRouter.login);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ServerFailuer(state.message).errMessage
                 )));
               }
@@ -129,7 +129,6 @@ class _WebSignupState extends State<WebSignup> {
 
    bool _validateFields(BuildContext context) {
      String e = email.text.trim();
-     String p = password.text.trim();
      String username=name.text;
      if (password.text.isEmpty || email.text.isEmpty) {
        ScaffoldMessenger.of(context).showSnackBar(

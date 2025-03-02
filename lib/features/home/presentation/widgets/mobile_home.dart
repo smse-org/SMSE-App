@@ -7,6 +7,8 @@ import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'category_icon.dart';
 
 class MobileHomePage extends StatelessWidget {
+  const MobileHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +33,7 @@ class MobileHomePage extends StatelessWidget {
             }
               ),
             const SizedBox(height: 20),
-            CategoryIcons(),
+            const CategoryIcons(),
             const SizedBox(height: 20),
             SectionHeader("Recent Searches"),
             RecentSearches(),

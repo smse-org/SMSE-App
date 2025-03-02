@@ -23,10 +23,6 @@ class SearchRepositoryImpl implements SearchRepository {
         token: true,
       );
 
-      if (response == null) {
-        return Left(ServerFailuer("No response from server"));
-      }
-
       // Ensure 'results' exists and is a list
       if (response["results"] is! List) {
         return Left(ServerFailuer("Invalid response format from server"));

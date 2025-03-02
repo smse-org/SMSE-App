@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
       create: (context) => SearchCubit(
         SearchRepositoryImpl(ApiService(Dio())),
       ),
-      child: HomePageContent(),
+      child: const HomePageContent(),
     );
   }
 }

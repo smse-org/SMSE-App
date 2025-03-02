@@ -15,16 +15,16 @@ class WebLayout extends StatefulWidget {
   const WebLayout({super.key, required this.toggleTheme, required this.themeMode});
 
   @override
-  _WebLayoutState createState() => _WebLayoutState();
+  WebLayoutState createState() => WebLayoutState();
 }
 
-class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixin {
+class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late PageController _pageController;
 
   final List<Widget> _pages = [
-    HomePage(),
-    SearchPage(),
+    const HomePage(),
+    const SearchPage(),
     const FavoritesPage(),
     ProfilePage(),
   ];
@@ -54,30 +54,35 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png'],
     );
+    if (!context.mounted) return;
 
     if (result != null) {
       if (kIsWeb) {
         // Web-specific handling: use bytes instead of paths
         List<Uint8List> filesInBytes = result.files.map((file) => file.bytes!).toList();
         // Show a dialog with a linear progress bar
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return FileUploadDialog(files: filesInBytes);
-          },
-        );
+        if(context.mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return FileUploadDialog(files: filesInBytes);
+            },
+          );
+        }
       } else {
         // For non-web platforms, use paths
         List<String> files = result.paths.whereType<String>().toList();
         // Show a dialog with a linear progress bar
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return FileUploadDialog(files: files);
-          },
-        );
+        if(context.mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return FileUploadDialog(files: files);
+            },
+          );
+        }
       }
     } else {
       // User canceled the picker
@@ -130,13 +135,13 @@ class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMix
 class FileUploadDialog extends StatefulWidget {
   final List<dynamic> files; // Can be either String (path) or Uint8List (bytes)
 
-  const FileUploadDialog({Key? key, required this.files}) : super(key: key);
+  const FileUploadDialog({super.key, required this.files});
 
   @override
-  _FileUploadDialogState createState() => _FileUploadDialogState();
+  FileUploadDialogState createState() => FileUploadDialogState();
 }
 
-class _FileUploadDialogState extends State<FileUploadDialog> {
+class FileUploadDialogState extends State<FileUploadDialog> {
   double progress = 0;
 
   @override

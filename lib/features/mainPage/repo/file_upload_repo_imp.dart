@@ -32,7 +32,6 @@ class FileUploadRepoImp extends FileUploadRep {
         data: formatData,
         token: true,
       );
-      print("Response Data: $response"); // Debug log
 
 
       if (response['message'] == "Content created successfully" && response['content'] != null) {

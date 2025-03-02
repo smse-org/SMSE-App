@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/core/components/custom_button.dart';
-import 'package:smse/core/components/textFeildCustom.dart';
+import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/auth/login/data/model/user.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_cubit.dart';
@@ -11,8 +11,11 @@ import 'package:smse/features/auth/login/presentation/controller/cubit/login_sta
 
 import '../../../../../constants.dart';
 class WebLoginPage extends StatelessWidget {
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
+  WebLoginPage({super.key});
+
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final loginCubit = BlocProvider.of<LoginCubit>(context);
@@ -42,7 +45,7 @@ class WebLoginPage extends StatelessWidget {
                       backgroundColor: Colors.green,
 
                     ));
-                    GoRouter.of(context).pushReplacement(AppRouter.KHome);
+                    GoRouter.of(context).pushReplacement(AppRouter.home);
                   }
                 },
                 builder: (context,state) {
@@ -107,7 +110,7 @@ class WebLoginPage extends StatelessWidget {
                         const SizedBox(height: 10),
                         CustomButton(
                           onPressed: () {
-                            GoRouter.of(context).push(AppRouter.KSignUp);
+                            GoRouter.of(context).push(AppRouter.signUp);
 
                           },
                           text: 'Sign Up',
@@ -124,8 +127,7 @@ class WebLoginPage extends StatelessWidget {
     );
   }
   bool _validateFields(BuildContext context) {
-    String e = email.text.trim();
-    String p = password.text.trim();
+
 
     if (password.text.isEmpty || email.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
