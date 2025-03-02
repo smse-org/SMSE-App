@@ -1,16 +1,12 @@
-import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/mainPage/model/content.dart';
 import 'package:smse/features/uploded_content/data/repositories/display_content_repo_imp.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
-import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
 import 'package:smse/features/uploded_content/presentation/screen/display_content_page.dart';
 
 class ContentPage extends StatelessWidget {
@@ -56,7 +52,7 @@ class ContentPage extends StatelessWidget {
 }
 
 class ContentMobilePage extends StatelessWidget {
-  const ContentMobilePage({Key? key}) : super(key: key);
+  const ContentMobilePage({super.key});
 
   @override
   Widget build(BuildContext context) {

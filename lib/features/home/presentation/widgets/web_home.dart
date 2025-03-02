@@ -4,7 +4,6 @@ import 'package:smse/features/home/presentation/screen/home_page_content.dart';
 import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 
-import '../screen/homapage.dart';
 import 'category_icon.dart';
 
 class WebHomePage extends StatelessWidget {

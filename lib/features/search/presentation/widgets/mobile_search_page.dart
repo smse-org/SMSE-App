@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/components/content_card.dart';
-import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';

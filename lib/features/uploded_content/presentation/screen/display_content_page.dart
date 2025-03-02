@@ -6,7 +6,7 @@ import 'package:smse/features/mainPage/model/content.dart';
 class ContentDetailPage extends StatelessWidget {
   final ContentModel content;
 
-  const ContentDetailPage({Key? key, required this.content}) : super(key: key);
+  const ContentDetailPage({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
 import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
