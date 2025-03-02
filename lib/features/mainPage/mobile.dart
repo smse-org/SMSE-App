@@ -24,7 +24,7 @@ class MobileLayout extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () => GoRouter.of(context).push(AppRouter.KSearchAnimation), // Example navigation
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80)),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -52,20 +52,17 @@ class MobileLayout extends StatelessWidget {
             case 0:
               context.go('/home');
               break;
+
             case 1:
-              context.go('/search');
-              break;
-            case 2:
               context.go('/favorites');
               break;
-            case 3:
+            case 2:
               context.go('/profile');
               break;
           }
         },
         tabs: [
           TabData(icon: const Icon(Icons.home), title: "Home"),
-          TabData(icon: const Icon(Icons.search), title: "Search"),
           TabData(icon: const Icon(Icons.favorite), title: "Favorites"),
           TabData(icon: const Icon(Icons.person), title: "Profile"),
         ],
@@ -78,12 +75,10 @@ class MobileLayout extends StatelessWidget {
     switch (location) {
       case '/home':
         return 0;
-      case '/search':
-        return 1;
       case '/favorites':
-        return 2;
+        return 1;
       case '/profile':
-        return 3;
+        return 2;
       default:
         return 0;
     }
