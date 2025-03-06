@@ -22,4 +22,14 @@ class SearchCubit extends Cubit<SearchState> {
   void setSearchResults(List<SearchResult> results) {
     emit(SearchSucsess(results));
   }
+
+  Future<void>searchQueries()async{
+    emit(SearchLoading());
+    final result = await searchRepository.queries();
+    result.fold(
+        (failure)=> emit(SearchError(failure.errMessage)),
+        (queries)=> emit(QueriesSuccess(queries ))
+
+    );
+  }
 }

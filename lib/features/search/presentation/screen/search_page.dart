@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/data/repositories/search_repo_imp.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
@@ -24,6 +26,9 @@ class SearchPage extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(onPressed: (){
+            GoRouter.of(context).pushReplacement(AppRouter.home);
+          }, icon:const Icon( Icons.arrow_back)),
           centerTitle: true,
           title: const Text(
             'Search Results',

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/data/repositories/search_repo.dart';
 
@@ -41,4 +42,26 @@ class SearchRepositoryImpl implements SearchRepository {
       return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
+
+  @override
+  Future<Either<Faliuer, List<SearchQuery>>> queries() async {
+    try {
+      final response = await apiService.get(endpoint: Constant.searchEndpoint);
+
+      if (response is List) {
+        final queries = response.map((data) => SearchQuery.fromJson(data as Map<String, dynamic>)).toList();
+        return Right(queries);
+      } else {
+        throw Exception("Expected List<dynamic>, but got ${response.runtimeType}");
+      }
+
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
+    } catch (e) {
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
+    }
+  }
+
 }

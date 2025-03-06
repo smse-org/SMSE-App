@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:smse/features/home/presentation/screen/home_page_content.dart';
 import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
+import 'package:smse/features/search/presentation/controller/search_state.dart';
 
 import 'category_icon.dart';
 
@@ -37,11 +39,33 @@ class WebHomePage extends StatelessWidget {
                 const SizedBox(height: 30),
                 const CategoryIcons(),
                 const SizedBox(height: 30),
-                SectionHeader("Recent Searches"),
-                RecentSearches(),
+                const SectionHeader("Recent Searches"),
+                BlocBuilder<SearchCubit, SearchState>(
+                  builder: (context, state) {
+                    if (state is SearchLoading) {
+                      return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                    } else if (state is QueriesSuccess) {
+                      return RecentSearches(results: state.searchQuery);
+                    } else {
+                      return const Center(child: Text("No recent searches found"));
+                    }
+                  },
+                ),
+              //  RecentSearches(),
                 const SizedBox(height: 30),
-                SectionHeader("Search Suggestions"),
-                SearchSuggestions(),
+                const SectionHeader("Search Suggestions"),
+                BlocBuilder<SearchCubit, SearchState>(
+                  builder: (context, state) {
+                    if (state is SearchLoading) {
+                      return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                    } else if (state is QueriesSuccess) {
+                      return SearchSuggestions(results: state.searchQuery);
+                    } else {
+                      return const Center(child: Text("No suggestions available"));
+                    }
+                  },
+                ),
+                //SearchSuggestions(),
                 const SizedBox(height: 50),  // Additional spacing for web layout
               ],
             ),

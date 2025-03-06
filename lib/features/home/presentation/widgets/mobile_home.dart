@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:smse/features/home/presentation/screen/home_page_content.dart';
 import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
+import 'package:smse/features/search/presentation/controller/search_state.dart';
 
 import 'category_icon.dart';
 
@@ -17,30 +19,44 @@ class MobileHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 40),  // Padding for mobile layout
+            const SizedBox(height: 40),
             const Text(
               "Search beyond keywords",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            SearchBarCustom(onSearch:
-            (query) {
+            SearchBarCustom(onSearch: (query) {
               context.read<SearchCubit>().search(query);
-
-            }
-              ),
+            }),
             const SizedBox(height: 20),
-            const CategoryIcons(),
+           // const CategoryIcons(),
             const SizedBox(height: 20),
-            SectionHeader("Recent Searches"),
-            RecentSearches(),
+            const SectionHeader("Recent Searches"),
+            BlocBuilder<SearchCubit, SearchState>(
+              builder: (context, state) {
+                if (state is SearchLoading) {
+                  return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                } else if (state is QueriesSuccess) {
+                  return RecentSearches(results: state.searchQuery);
+                } else {
+                  return const Center(child: Text("No recent searches found"));
+                }
+              },
+            ),
             const SizedBox(height: 20),
-            SectionHeader("Search Suggestions"),
-            SearchSuggestions(),
-            const SizedBox(height: 40),  // Padding at the bottom for mobile
+            const SectionHeader("Search Suggestions"),
+            BlocBuilder<SearchCubit, SearchState>(
+              builder: (context, state) {
+                if (state is SearchLoading) {
+                  return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                } else if (state is QueriesSuccess) {
+                  return SearchSuggestions(results: state.searchQuery);
+                } else {
+                  return const Center(child: Text("No suggestions available"));
+                }
+              },
+            ),
+            const SizedBox(height: 40),
           ],
         ),
       ),

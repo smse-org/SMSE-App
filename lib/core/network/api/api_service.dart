@@ -4,13 +4,13 @@ import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/utililes/cached_sp.dart';
 
 class ApiService {
-  final String _baseUrl = "https://smseai.me/api/v1/";
+  final String _baseUrl = "https://smseai.me/api/";
   final Dio _dio;
 
   ApiService(this._dio);
 
   // GET request
-  Future<Map<String, dynamic>> get({required String endpoint}) async {
+  Future<dynamic> get({required String endpoint}) async {
     try {
       final token = await CachedData.getData(Constant.accessToekn);
       final response = await _dio.get(
@@ -19,6 +19,7 @@ class ApiService {
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
+
       return _handleResponse(response);
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -26,6 +27,7 @@ class ApiService {
       throw Exception('Unexpected error during GET request: $e');
     }
   }
+
 
   // POST request
   Future<Map<String, dynamic>> post({
@@ -63,6 +65,40 @@ class ApiService {
   }
 
 
+  Future<Map<String, dynamic>> postContent({
+    required String endpoint,
+    required dynamic data,
+    bool? token = false,
+    ResponseType? responseType,
+    Function(int sent, int total)? onSendProgress,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "$_baseUrl$endpoint",
+        data: data,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            if (token == true)
+              'Authorization': 'Bearer ${await CachedData.getData(Constant.accessToekn)}',
+          },
+          responseType: responseType ?? ResponseType.json,
+        ),
+        onSendProgress: onSendProgress,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      } else {
+        throw ServerFailuer.fromResponse(response.statusCode, response.data);
+      }
+    } on DioException catch (dioError) {
+      throw ServerFailuer.fromDioError(dioError);
+    } catch (e) {
+      throw ServerFailuer("Unexpected error: ${e.toString()}");
+    }
+  }
+
 
   // DELETE request
   Future<Map<String, dynamic>> delete({required String endpoint}) async {
@@ -81,7 +117,7 @@ class ApiService {
   }
 
   // Handle API responses
-  Map<String, dynamic> _handleResponse(Response response) {
+  dynamic _handleResponse(Response response) {
     if (response.statusCode == 200 || response.statusCode == 201) {
       return response.data;
     } else {

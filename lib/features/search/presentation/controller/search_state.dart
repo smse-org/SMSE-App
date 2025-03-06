@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 
 abstract class SearchState extends Equatable {
@@ -14,6 +15,13 @@ class SearchSucsess extends SearchState {
   const SearchSucsess(this.searchResults);
   @override
   List<Object> get props => [searchResults];
+}
+
+class QueriesSuccess extends SearchState{
+  final List<SearchQuery> searchQuery;
+  const QueriesSuccess(this.searchQuery);
+  @override
+  List<Object> get props => [searchQuery];
 }
 class SearchError extends SearchState {
   final String message;

@@ -27,7 +27,7 @@ class FileUploadRepoImp extends FileUploadRep {
     }
 
     try {
-      final response = await apiService.post(
+      final response = await apiService.postContent(
         endpoint: "contents",
         data: formatData,
         token: true,

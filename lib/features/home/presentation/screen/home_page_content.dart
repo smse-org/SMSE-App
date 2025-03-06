@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/core/routes/app_router.dart';
+import 'package:smse/features/search/data/model/search_query.dart';
+import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
 
@@ -14,6 +16,8 @@ class HomePageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<SearchCubit>().searchQueries();
+
     return BlocListener<SearchCubit,SearchState>(
       listener: (context, state) {
         if (state is SearchError) {
@@ -63,34 +67,31 @@ class SectionHeader extends StatelessWidget {
 }
 
 class RecentSearches extends StatelessWidget {
-  const RecentSearches({super.key});
+  final List<SearchQuery> results;
+
+  const RecentSearches({super.key, required this.results});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        TextHomeCard(title: "Sunset beach photos"),
-        TextHomeCard(title: "Black hole research"),
-        TextHomeCard(title: "Documentaries on space exploration"),
-        TextHomeCard(title: "Healthy recipes for dinner"),
-      ],
+    return Column(
+      children: results
+          .take(4)
+          .map((result) => TextHomeCard(title: result.text)).toList(),
     );
   }
 }
 
 class SearchSuggestions extends StatelessWidget {
-  const SearchSuggestions({super.key});
+  final List<SearchQuery> results;
+
+  const SearchSuggestions({super.key, required this.results});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        TextHomeCard(title: "Popular travel destinations"),
-        TextHomeCard(title: "Latest technology trends"),
-        TextHomeCard(title: "Top movies of 2023"),
-        TextHomeCard(title: "Healthy recipes for dinner"),
-
-      ],
+    return Column(
+      children: results
+      .take(4)
+          .map((result) => TextHomeCard(title: result.text)).toList(),
     );
   }
 }
