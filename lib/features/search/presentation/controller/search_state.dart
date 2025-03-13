@@ -17,6 +17,14 @@ class SearchSucsess extends SearchState {
   List<Object> get props => [searchResults];
 }
 
+class SearchSuggestionsLoaded extends SearchState{
+  final List<String> suggestions;
+
+  const SearchSuggestionsLoaded(this.suggestions);
+  @override
+  List<Object> get props => [suggestions];
+}
+
 class QueriesSuccess extends SearchState{
   final List<SearchQuery> searchQuery;
   const QueriesSuccess(this.searchQuery);

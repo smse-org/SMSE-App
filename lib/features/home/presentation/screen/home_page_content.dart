@@ -106,7 +106,9 @@ class TextHomeCard extends StatelessWidget {
     return  Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.white70),
+        border: Border.all(color:Theme.of(context).brightness == Brightness.light
+            ? Colors.black
+            : Colors.white70,),
         borderRadius: BorderRadius.circular(5),
         color: Theme.of(context).brightness == Brightness.light
             ? Colors.white

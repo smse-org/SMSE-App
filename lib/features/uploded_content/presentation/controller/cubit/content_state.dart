@@ -8,14 +8,17 @@ abstract class ContentState extends Equatable {
   List<Object?> get props => [];
 }
 
+// Initial State
 class ContentInitial extends ContentState {
   const ContentInitial();
 }
 
+// Loading Contents
 class ContentLoading extends ContentState {
   const ContentLoading();
 }
 
+// Successfully Loaded Contents
 class ContentLoaded extends ContentState {
   final List<ContentModel> contents;
 
@@ -25,6 +28,7 @@ class ContentLoaded extends ContentState {
   List<Object?> get props => [contents];
 }
 
+// Error Handling
 class ContentError extends ContentState {
   final String message;
 
@@ -34,6 +38,7 @@ class ContentError extends ContentState {
   List<Object?> get props => [message];
 }
 
+// Content Deletion States
 class ContentDeleting extends ContentState {
   const ContentDeleting();
 }
@@ -42,10 +47,21 @@ class ContentDeleted extends ContentState {
   const ContentDeleted();
 }
 
+// File Download States
 class FileDownloading extends ContentState {
-  const FileDownloading();
+  final double progress; // Added progress tracking
+
+  const FileDownloading(this.progress);
+
+  @override
+  List<Object?> get props => [progress];
 }
 
 class FileDownloaded extends ContentState {
-  const FileDownloaded();
+  final String filePath; // Added file path to open the file
+
+  const FileDownloaded(this.filePath);
+
+  @override
+  List<Object?> get props => [filePath];
 }

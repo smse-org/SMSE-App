@@ -116,6 +116,28 @@ class ApiService {
     }
   }
 
+  //download request
+  Future<void> downloadFile({
+    required String endpoint,
+    required String savePath,
+    Function(int received, int total)? onReceiveProgress,
+  }) async {
+    try {
+      final token = await CachedData.getData(Constant.accessToekn);
+
+      await _dio.download(
+        "$_baseUrl$endpoint",
+        savePath,
+        onReceiveProgress: onReceiveProgress,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+
+      );
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('Unexpected error during file download: $e');
+    }
+  }
   // Handle API responses
   dynamic _handleResponse(Response response) {
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -128,6 +150,7 @@ class ApiService {
       );
     }
   }
+
 
   Exception _handleDioError(DioException e) {
     String message = "Unexpected error occurred";

@@ -7,4 +7,6 @@ import 'package:smse/features/search/data/model/search_results.dart';
 abstract class SearchRepository {
   Future<Either<Faliuer, List<SearchResult>>> searchFiles(String query);
   Future<Either<Faliuer,List<SearchQuery>>> queries();
+//  Future<List<String>> getMlKitSuggestions(String query);
+
 }

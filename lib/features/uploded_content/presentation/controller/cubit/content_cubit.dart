@@ -26,12 +26,16 @@ class ContentCubit extends Cubit<ContentState> {
     fetchContents(); // Refresh contents after deletion
   }
 
-  void downloadFile(int id) async {
-    emit(const FileDownloading());
-    final result = await repository.downloadContent(id: id);
+  void downloadFile(int id, String fileName) async {
+    emit(const FileDownloading(0)); // Emit initial download state (0%)
+
+    final result = await repository.downloadContent(id: id, fileName: fileName);
+
     result.fold(
-          (failure) => emit(ContentError(failure.errMessage)),
-          (_) => emit(const FileDownloaded()),
+          (failure) => emit(ContentError(failure.errMessage)), // Emit error if download fails
+          (filePath) => emit(FileDownloaded(filePath)), // Emit success state with file path
     );
   }
+
+
 }
