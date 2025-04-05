@@ -13,6 +13,8 @@ class WebHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController _searchController = TextEditingController();
+
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
@@ -31,11 +33,12 @@ class WebHomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-                 SearchBarCustom(
-                   onSearch: (query) {
-                     context.read<SearchCubit>().search(query);
-                   },
-                 ),
+                SearchBarCustom(
+                  controller: _searchController,
+                  onSearch: (query) {
+                    context.read<SearchCubit>().search(query);
+                  },
+                ),
                 const SizedBox(height: 30),
                 const CategoryIcons(),
                 const SizedBox(height: 30),
@@ -45,13 +48,20 @@ class WebHomePage extends StatelessWidget {
                     if (state is SearchLoading) {
                       return const Center(child: SpinKitCubeGrid(color: Colors.black));
                     } else if (state is QueriesSuccess) {
-                      return RecentSearches(results: state.searchQuery);
+                      return RecentSearches(
+                        results: state.searchQuery,
+                        onTextClicked: (text) {
+                          _searchController.text = text;
+                          context.read<SearchCubit>().search(text);
+                        },
+                      );
                     } else {
                       return const Center(child: Text("No recent searches found"));
                     }
                   },
                 ),
-              //  RecentSearches(),
+
+                //  RecentSearches(),
                 const SizedBox(height: 30),
                 const SectionHeader("Search Suggestions"),
                 BlocBuilder<SearchCubit, SearchState>(
@@ -59,12 +69,19 @@ class WebHomePage extends StatelessWidget {
                     if (state is SearchLoading) {
                       return const Center(child: SpinKitCubeGrid(color: Colors.black));
                     } else if (state is QueriesSuccess) {
-                      return SearchSuggestions(results: state.searchQuery);
+                      return SearchSuggestions(
+                        results: state.searchQuery,
+                        onTextClicked: (text) {
+                          _searchController.text = text;
+                          context.read<SearchCubit>().search(text);
+                        },
+                      );
                     } else {
                       return const Center(child: Text("No suggestions available"));
                     }
                   },
                 ),
+
                 //SearchSuggestions(),
                 const SizedBox(height: 50),  // Additional spacing for web layout
               ],

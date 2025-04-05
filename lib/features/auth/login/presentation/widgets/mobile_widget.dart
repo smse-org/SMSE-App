@@ -83,7 +83,7 @@ class MobileLoginPageState extends State<MobileLoginPage> {
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
-                  Textfeildcustom(obsecure: false, label: 'Enter your email', controller: emailController),
+                  Textfeildcustom(obsecure: false, label: 'Enter your Username', controller: emailController),
                   const SizedBox(height: 10),
                   Textfeildcustom(obsecure: true, label: 'Enter your password', controller: passwordController),
                   const SizedBox(height: 20),

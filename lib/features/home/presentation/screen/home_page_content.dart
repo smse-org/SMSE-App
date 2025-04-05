@@ -68,54 +68,80 @@ class SectionHeader extends StatelessWidget {
 
 class RecentSearches extends StatelessWidget {
   final List<SearchQuery> results;
+  final Function(String) onTextClicked;
 
-  const RecentSearches({super.key, required this.results});
+  const RecentSearches({
+    super.key,
+    required this.results,
+    required this.onTextClicked,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: results
-          .take(4)
-          .map((result) => TextHomeCard(title: result.text)).toList(),
+      children: results.take(4).map(
+            (result) {
+          return TextHomeCard(
+            title: result.text,
+            onTap: () => onTextClicked(result.text),
+          );
+        },
+      ).toList(),
     );
   }
 }
 
+
 class SearchSuggestions extends StatelessWidget {
   final List<SearchQuery> results;
+  final Function(String) onTextClicked;
 
-  const SearchSuggestions({super.key, required this.results});
+  const SearchSuggestions({
+    super.key,
+    required this.results,
+    required this.onTextClicked,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: results
-      .take(4)
-          .map((result) => TextHomeCard(title: result.text)).toList(),
+      children: results.take(4).map(
+            (result) {
+          return TextHomeCard(
+            title: result.text,
+            onTap: () => onTextClicked(result.text),
+          );
+        },
+      ).toList(),
     );
   }
 }
 
 
 class TextHomeCard extends StatelessWidget {
-  const TextHomeCard({super.key, required this.title});
   final String title;
+  final VoidCallback? onTap;
+
+  const TextHomeCard({super.key, required this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return  Container(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        border: Border.all(color:Theme.of(context).brightness == Brightness.light
-            ? Colors.black
-            : Colors.white70,),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.light
+              ? Colors.black
+              : Colors.white70,
+        ),
         borderRadius: BorderRadius.circular(5),
         color: Theme.of(context).brightness == Brightness.light
             ? Colors.white
             : Colors.black,
       ),
-      child:  ListTile(
+      child: ListTile(
         title: Text(title),
+        onTap: onTap,
       ),
     );
   }
