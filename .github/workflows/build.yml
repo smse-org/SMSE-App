@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - test
+      - master
   # push:
   #   branches:
   #     - dev
@@ -54,53 +55,7 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=keystore.jks" >> android/key.properties
         
-        #5.5 Configure analysis_options to ignore specific warnings
-      - name: Configure analysis_options.yaml
-        run: |
-          if [ -f analysis_options.yaml ]; then
-            cp analysis_options.yaml analysis_options.yaml.bak
-            cat > analysis_options.yaml << 'EOF'
-          include: package:flutter_lints/flutter.yaml
-
-          analyzer:
-            errors:
-              unused_import: ignore
-              unused_local_variable: ignore
-              no_leading_underscores_for_local_identifiers: ignore
-              use_build_context_synchronously: ignore
-              prefer_const_constructors: ignore
-              use_key_in_widget_constructors: ignore
-              unnecessary_string_interpolations: ignore
-              avoid_print: ignore
-              dead_code: ignore
-            exclude:
-              - "**/*.g.dart"
-              - "**/*.freezed.dart"
-              - "lib/generated/**"
-          EOF
-          else
-            cat > analysis_options.yaml << 'EOF'
-          include: package:flutter_lints/flutter.yaml
-
-          analyzer:
-            errors:
-              unused_import: ignore
-              unused_local_variable: ignore
-              no_leading_underscores_for_local_identifiers: ignore
-              use_build_context_synchronously: ignore
-              prefer_const_constructors: ignore
-              use_key_in_widget_constructors: ignore
-              unnecessary_string_interpolations: ignore
-              avoid_print: ignore
-              dead_code: ignore
-            exclude:
-              - "**/*.g.dart"
-              - "**/*.freezed.dart"
-              - "lib/generated/**"
-          EOF
-          fi
-
-       #6 Building APK with relaxed requirements
+        #6 Building APK with relaxed requirements
       - name: Build APK
         run: flutter build apk --release --no-sound-null-safety --no-tree-shake-icons
 
