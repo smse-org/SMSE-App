@@ -3,30 +3,41 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 
 class SearchBarCustom extends StatefulWidget {
+  final Function(String) onSearch;
+  final TextEditingController controller;
+
+  const SearchBarCustom({
+    super.key,
+    required this.onSearch,
+    required this.controller,
+  });
+
   @override
-  _SearchBarCustomState createState() => _SearchBarCustomState();
+  SearchBarCustomState createState() => SearchBarCustomState();
 }
 
-class _SearchBarCustomState extends State<SearchBarCustom> {
+class SearchBarCustomState extends State<SearchBarCustom> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
-  final TextEditingController _controller = TextEditingController();
+
+  void _handleSearch() {
+    if (widget.controller.text.isNotEmpty) {
+      widget.onSearch(widget.controller.text);
+    }
+  }
 
   Future<bool> _requestMicrophonePermission() async {
     var status = await Permission.microphone.status;
     if (status.isDenied) {
-      // Request the permission
       status = await Permission.microphone.request();
     }
-    // Return true if granted
     return status.isGranted;
   }
 
   void _toggleListening() async {
     if (_isListening) {
-      setState(() {
-        _isListening = false;
-      });
+      setState(() => _isListening = false);
+      _handleSearch();
       await _speech.stop();
     } else {
       final hasPermission = await _requestMicrophonePermission();
@@ -40,18 +51,12 @@ class _SearchBarCustomState extends State<SearchBarCustom> {
       try {
         bool available = await _speech.initialize();
         if (available) {
-          setState(() {
-            _isListening = true;
-          });
+          setState(() => _isListening = true);
           await _speech.listen(onResult: (result) {
             setState(() {
-              _controller.text = result.recognizedWords;
+              widget.controller.text = result.recognizedWords;
             });
           });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Speech recognition not available")),
-          );
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +69,8 @@ class _SearchBarCustomState extends State<SearchBarCustom> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: _controller,
+      controller: widget.controller,
+      onSubmitted: (_) => _handleSearch(),
       decoration: InputDecoration(
         hintText: "Find a sunset beach photo or Research on black holes",
         prefixIcon: const Icon(Icons.search),

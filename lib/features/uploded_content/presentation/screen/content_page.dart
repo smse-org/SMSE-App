@@ -1,20 +1,19 @@
-import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/mainPage/model/content.dart';
+import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
+import 'package:smse/features/previewPage/presentation/widgets/preview_page_web.dart';
 import 'package:smse/features/uploded_content/data/repositories/display_content_repo_imp.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
-import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
 import 'package:smse/features/uploded_content/presentation/screen/display_content_page.dart';
 
 class ContentPage extends StatelessWidget {
-  const ContentPage({Key? key}) : super(key: key);
+  const ContentPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,14 +55,14 @@ class ContentPage extends StatelessWidget {
 }
 
 class ContentMobilePage extends StatelessWidget {
-  const ContentMobilePage({Key? key}) : super(key: key);
+  const ContentMobilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ContentCubit, ContentState>(
       builder: (context, state) {
         if (state is ContentLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: SpinKitCubeGrid(color: Colors.black,));
         } else if (state is ContentError) {
           return Center(child: Text(state.message));
         } else if (state is ContentLoaded) {
@@ -74,13 +73,13 @@ class ContentMobilePage extends StatelessWidget {
               return
                   Card(
                     child: ListTile(
-                      title: Text(content.content_path.split('/').last),
-                      subtitle: Text(content.content_tag ? "Tagged" : "Not Tagged"),
+                      title: Text(content.contentPath.split('/').last),
+                      subtitle: Text(content.contentTag ? "Tagged" : "Not Tagged"),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ContentDetailPage(content: content),
+                            builder: (context) => const FileViewerPage(),
                           ),
                         );
                       },
@@ -103,7 +102,7 @@ class ContentMobilePage extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.download),
           onPressed: () {
-            context.read<ContentCubit>().downloadFile(content.id ?? 0);
+            context.read<ContentCubit>().downloadFile(content.id ?? 0,content.contentPath);
           },
         ),
         IconButton(
@@ -118,7 +117,7 @@ class ContentMobilePage extends StatelessWidget {
 }
 
 class ContentWebPage extends StatelessWidget {
-  const ContentWebPage({Key? key}) : super(key: key);
+  const ContentWebPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -147,11 +146,11 @@ class ContentWebPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        content.content_path.split('/').last,
+                        content.contentPath.split('/').last,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      Text(content.content_tag ? "Tagged" : "Not Tagged"),
+                      Text(content.contentTag ? "Tagged" : "Not Tagged"),
                       const Spacer(),
                       buildActions(context, content),
                     ],
@@ -173,7 +172,7 @@ class ContentWebPage extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.download),
           onPressed: () {
-            context.read<ContentCubit>().downloadFile(content.id ?? 0);
+           DownloadProgressWidget(contentId: content.id??0,contentPath: content.contentPath,);
           },
         ),
         IconButton(
@@ -187,5 +186,36 @@ class ContentWebPage extends StatelessWidget {
   }
 }
 
+class DownloadProgressWidget extends StatelessWidget {
+  final int contentId;
+  final String contentPath;
+
+  const DownloadProgressWidget({super.key, required this.contentId, required this.contentPath});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ContentCubit, ContentState>(
+      builder: (context, state) {
+        if (state is FileDownloading) {
+          return Column(
+            children: [
+              const Text("Downloading..."),
+              LinearProgressIndicator(value: state.progress / 100),
+            ],
+          );
+        } else if (state is FileDownloaded) {
+          return const Icon(Icons.check_circle, color: Colors.green);
+        } else {
+          return IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () {
+              context.read<ContentCubit>().downloadFile(contentId,contentPath);
+            },
+          );
+        }
+      },
+    );
+  }
+}
 
 

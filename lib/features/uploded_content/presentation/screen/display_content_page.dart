@@ -6,18 +6,18 @@ import 'package:smse/features/mainPage/model/content.dart';
 class ContentDetailPage extends StatelessWidget {
   final ContentModel content;
 
-  const ContentDetailPage({Key? key, required this.content}) : super(key: key);
+  const ContentDetailPage({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
-    final extension = content.content_path.split('.').last.toLowerCase();
+    final extension = content.contentPath.split('.').last.toLowerCase();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(content.content_path.split('/').last),
+        title: Text(content.contentPath.split('/').last),
       ),
       body: Center(
-        child: _buildContentDetail(extension, content.content_path),
+        child: _buildContentDetail(extension, content.contentPath),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:smse/features/auth/signup/data/model/userModel.dart';
+import 'package:smse/features/auth/signup/data/model/user_model.dart';
 
 abstract class SignUpState extends Equatable {
   const SignUpState();

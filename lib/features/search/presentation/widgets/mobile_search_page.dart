@@ -1,60 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/components/content_card.dart';
-import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-class MobileSearchView extends StatefulWidget {
+import 'package:smse/features/search/data/model/search_results.dart';
+import 'package:smse/features/search/presentation/controller/search_cubit.dart';
+import 'package:smse/features/search/presentation/controller/search_state.dart';
+class MobileSearchView extends StatelessWidget {
   const MobileSearchView({super.key});
 
   @override
-  State<MobileSearchView> createState() => _MobileSearchViewState();
-}
-
-class _MobileSearchViewState extends State<MobileSearchView> {
-  bool isLoading = true; // Loading state
-
-  @override
-  void initState() {
-    super.initState();
-    // Simulate a delay for loading state
-    Future.delayed(const Duration(seconds: 3), () {
-      setState(() {
-        isLoading = false;
-      });
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-         SearchBarCustom(),
-        const SizedBox(height: 20),
-        _buildContentList(), // Show actual content
-      ],
+    return BlocBuilder<SearchCubit, SearchState>(
+      builder: (context, state) {
+        return Column(
+          children: [
+            const SizedBox(height: 20),
+            if (state is SearchLoading)
+              const Skeletonizer(
+                enabled: true,
+                child: _BuildDummyContent(),
+              )
+            else if (state is SearchSucsess)
+              _buildContentList(state.searchResults)
+            else if (state is SearchError)
+                Center(child: Text(state.message))
+              else
+                const Center(child: Text('Start searching...')),
+          ],
+        );
+      },
     );
   }
 
-  // Skeleton Loader
+  Widget _buildContentList(List<SearchResult> results) {
+    return ListView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(8.0),
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final result = results[index];
+        return ContentCardWeb(
+          title: 'Content ID: ${result.contentId}',
+          relevanceScore: (result.similarityScore * 100).round(),
+        );
+      },
+    );
+  }
+}
 
+class _BuildDummyContent extends StatelessWidget {
+  const _BuildDummyContent();
 
-  // Content List
-  Widget _buildContentList() {
-    return Skeletonizer(
-      enabled: isLoading,
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(8.0),
-        children: const [
-          ContentCardWeb(
-            title: 'Beautiful Sunset Beach Photo',
-            relevanceScore: 95,
-          ),
-          ContentCardWeb(
-            title: 'Document on Black Hole Research',
-            relevanceScore: 90,
-          ),
-        ],
-      ),
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(8.0),
+      children: const [
+        ContentCardWeb(
+          title: 'Loading content...',
+          relevanceScore: 95,
+        ),
+        ContentCardWeb(
+          title: 'Loading content...',
+          relevanceScore: 90,
+        ),
+      ],
     );
   }
 }

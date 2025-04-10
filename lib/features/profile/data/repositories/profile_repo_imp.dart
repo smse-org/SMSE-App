@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
-import 'package:smse/features/profile/data/model/ProfileData.dart';
+import 'package:smse/features/profile/data/model/profile_data.dart';
 import 'package:smse/features/profile/data/repositories/profile_repo.dart';
 
 class ProfilRepoImp extends ProfileRepository {

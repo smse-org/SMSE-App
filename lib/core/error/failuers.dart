@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 abstract class Faliuer {
@@ -34,9 +36,7 @@ class ServerFailuer extends Faliuer {
         return ServerFailuer("Unexpected certificate error.");
       case DioExceptionType.connectionError:
         return ServerFailuer("No Internet Connection.");
-      default:
-        return ServerFailuer("Unexpected error occurred.");
-    }
+      }
   }
 
   factory ServerFailuer.fromResponse(int? statusCode, dynamic response) {
@@ -44,25 +44,26 @@ class ServerFailuer extends Faliuer {
       return ServerFailuer("Unexpected error occurred, please try again later.");
     }
 
-    String errorMessage = "Invalid credentials";
+    // Extract error message from API response
+    String errorMessage = "Unexpected error occurred";
     if (response is Map<String, dynamic>) {
-      // Handle different error response structures
       errorMessage = response["error"]?["message"] ??
           response["msg"] ??
           response["message"] ??
-          errorMessage;
-    }
-
-    if (statusCode != null) {
-      if (statusCode == 400 || statusCode == 401 || statusCode == 403) {
-        return ServerFailuer(errorMessage);
-      } else if (statusCode == 404) {
-        return ServerFailuer("Your request was not found. Please try again later.");
-      } else if (statusCode == 500) {
-        return ServerFailuer("Internal server error. Please try again later.");
+          jsonEncode(response); // Fallback: return full response as string
+    } else if(response is String){
+      if (response.contains("<html") || response.contains("<!DOCTYPE html>")) {
+        errorMessage = "Error occurred on server side";
+      } else {
+        errorMessage = response; // Plain text error message
       }
+
+    }else{
+      errorMessage = response.toString();
+
     }
 
     return ServerFailuer(errorMessage);
   }
+
 }

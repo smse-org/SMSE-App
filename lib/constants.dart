@@ -11,4 +11,5 @@ class Constant{
   static const String loginEndpoint = "auth/login";
   static const String registerEndpoint = "auth/register";
   static const String profileEndpoint = "users/me";
+  static const String searchEndpoint = "search";
 }

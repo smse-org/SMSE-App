@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
-import 'package:smse/features/auth/signup/data/model/userModel.dart';
+import 'package:smse/features/auth/signup/data/model/user_model.dart';
 import 'package:smse/features/auth/signup/data/repositories/signup_repo.dart';
 
 class SignUpRepoImp extends SignUpRepo {
@@ -12,29 +12,25 @@ class SignUpRepoImp extends SignUpRepo {
   SignUpRepoImp(this.apiService);
 
   @override
-  Future<Either<Faliuer, SignupModel>> signUp(SignupModel signupModel) async{
+  Future<Either<Faliuer, SignupModel>> signUp(SignupModel signupModel) async {
     try {
-      var resp = await apiService.post(endpoint: Constant.registerEndpoint, data: signupModel.toJson(),token:false);
-      if (resp['msg'] != null) {
-        if (resp['msg'] == 'User created successfully') {
-          SignupModel signupResponse = SignupModel.fromJson(resp);
-          return Right(signupResponse);
-        } else {
-          return Left(ServerFailuer(resp['msg']));
-        }
+      final response = await apiService.post(
+        endpoint: Constant.registerEndpoint,
+        data: signupModel.toJson(),
+        token: false,
+      );
+
+      if (response['msg'] == 'User created successfully') {
+        // ✅ Instead of parsing a user model from the response, just return the original signupModel
+        return Right(signupModel);
       }
-
-
-
-      return Left(ServerFailuer('Unknown error occurred'));
-
-    } on DioException catch (e) {
-      // Handle Dio errors
-      return Left(ServerFailuer(e.response?.data['msg'] ?? 'Error during request'));
+      return Left(ServerFailuer(response['msg'] ?? 'Signup failed'));
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      // Handle other exceptions
-      return Left(ServerFailuer(e.toString()));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 }
-

@@ -7,10 +7,10 @@ class Textfeildcustom extends StatefulWidget {
   const Textfeildcustom({super.key, required this.label, required this.obsecure, required this.controller});
 
   @override
-  _TextfeildcustomState createState() => _TextfeildcustomState();
+  TextfeildcustomState createState() => TextfeildcustomState();
 }
 
-class _TextfeildcustomState extends State<Textfeildcustom> {
+class TextfeildcustomState extends State<Textfeildcustom> {
   late bool _obscure; // This will be controlled internally only for password fields
 
   @override

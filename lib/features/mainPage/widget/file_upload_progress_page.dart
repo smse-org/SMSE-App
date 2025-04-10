@@ -8,7 +8,7 @@ import 'package:smse/features/mainPage/controller/file_state.dart';
 class FileUploadProgressDialog extends StatelessWidget {
   final List<String> files;
 
-  const FileUploadProgressDialog({Key? key, required this.files}) : super(key: key);
+  const FileUploadProgressDialog({super.key,  required this.files});
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +17,12 @@ class FileUploadProgressDialog extends StatelessWidget {
     return BlocListener<FileUploadCubit, FileUploadState>(
       listener: (context, state) {
         if (state is FileUploadSuccess) {
-          GoRouter.of(context).pushReplacement(AppRouter.KHome); // Close dialog on success
+          GoRouter.of(context).pushReplacement(AppRouter.home); // Close dialog on success
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Files uploaded successfully!")),
           );
         } else if (state is FileUploadFailure) {
-          print("Error: ${state.error}");
-          GoRouter.of(context).pushReplacement(AppRouter.KHome); // Close dialog on failure
+          GoRouter.of(context).pushReplacement(AppRouter.home); // Close dialog on failure
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error: ${state.error}")),
           );

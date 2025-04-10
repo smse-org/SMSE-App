@@ -77,7 +77,7 @@ class ProfileContentMobile extends StatelessWidget {
               title: const Text("All files Uploaded"),
               leading: Icon(Icons.upload_file_sharp, color: Colors.grey[700]),
               onTap: () {
-                GoRouter.of(context).push(AppRouter.kContetnPage);
+                GoRouter.of(context).push(AppRouter.contentPage);
               },
             ),
 
@@ -126,7 +126,7 @@ class ProfileContentMobile extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Logout Successfully')),
                   );
-                  GoRouter.of(context).go(AppRouter.KLogin);
+                  GoRouter.of(context).go(AppRouter.login);
                 }
               },
               child: PushableButton(hslColor: HSLColor.fromColor(Colors.blueAccent), height: 50,

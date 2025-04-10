@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/network/api/api_service.dart';
-import 'package:smse/core/utililes/cachedSP.dart';
+import 'package:smse/core/utililes/cached_sp.dart';
 import 'package:smse/features/auth/login/data/model/user.dart';
 import 'package:smse/features/auth/login/data/repositories/loginrepo.dart';
 
@@ -25,10 +25,12 @@ class LoginRepoImp extends LoginRepo{
 
 
       return Right(token);
-    } on DioException catch (e) {
-      return Left(ServerFailuer.fromDioError(e));
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      return Left(ServerFailuer.fromResponse(e.hashCode, e));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 }

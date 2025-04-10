@@ -1,27 +1,27 @@
 class ContentModel {
   int? id; // Nullable
-  String content_path;
-  bool content_tag;
+  String contentPath;
+  bool contentTag;
 
   ContentModel({
     this.id,
-    required this.content_path,
-    required this.content_tag,
+    required this.contentPath,
+    required this.contentTag,
   });
 
   factory ContentModel.fromJson(Map<String, dynamic> json) {
     return ContentModel(
       id: json['id'],
-      content_path: json['content_path'],
-      content_tag: json['content_tag'] ?? false,
+      contentPath: json['content_path'],
+      contentTag: json['content_tag'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'content_path': content_path,
-      'content_tag': content_tag,
+      'content_path': contentPath,
+      'content_tag': contentTag,
     };
   }
 }

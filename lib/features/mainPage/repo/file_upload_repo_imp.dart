@@ -27,12 +27,11 @@ class FileUploadRepoImp extends FileUploadRep {
     }
 
     try {
-      final response = await apiService.post(
+      final response = await apiService.postContent(
         endpoint: "contents",
         data: formatData,
         token: true,
       );
-      print("Response Data: $response"); // Debug log
 
 
       if (response['message'] == "Content created successfully" && response['content'] != null) {
@@ -40,14 +39,12 @@ class FileUploadRepoImp extends FileUploadRep {
       } else {
         return Left(ServerFailuer("Unexpected response format"));
       }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        print("Error Data: ${e.response?.data}");
-        print("Error Status Code: ${e.response?.statusCode}");
-      }
-      return Left(ServerFailuer.fromDioError(e));
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      return Left(ServerFailuer(e.toString()));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 }
