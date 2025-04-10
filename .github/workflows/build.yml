@@ -57,15 +57,15 @@ jobs:
         
         #6 Building APK with relaxed requirements
       - name: Build APK
-        run: flutter build apk --release --no-sound-null-safety --no-tree-shake-icons
+        run: flutter build apk --release
 
         #7 Building App Bundle (aab) with relaxed requirements
       - name: Build appBundle
-        run: flutter build appbundle --no-sound-null-safety --no-tree-shake-icons
+        run: flutter build appbundle
 
         #8 Build IPA ( IOS Build ) with relaxed requirements
       - name: Build IPA
-        run: flutter build ipa --no-codesign --no-sound-null-safety --no-tree-shake-icons
+        run: flutter build ipa --no-codesign
 
       - name: Compress Archives and IPAs
         run: |
