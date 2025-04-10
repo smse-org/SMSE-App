@@ -53,15 +53,15 @@ jobs:
         
        #6 Building APK
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-sound-null-safety --no-tree-shake-icons
 
         #7 Building App Bundle (aab)
       - name: Build appBundle
-        run: flutter build appbundle
+        run: flutter build appbundle --no-sound-null-safety --no-tree-shake-icons
 
         #8 Build IPA ( IOS Build )
       - name: Build IPA
-        run: flutter build ipa --no-codesign
+        run: flutter build ipa --no-codesign --no-sound-null-safety --no-tree-shake-icons
 
       - name: Compress Archives and IPAs
         run: |
