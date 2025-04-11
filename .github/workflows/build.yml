@@ -117,6 +117,8 @@ jobs:
           else
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
+          echo "${{ secrets.RELEASE_TOKEN }}"
+          
           
         #13 Modify Tag if it Exists
       - name: Modify Tag
@@ -125,7 +127,6 @@ jobs:
         run: |
           new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
           echo "VERSION=$new_version" >> $GITHUB_ENV
-          echo "${{ secrets.RELEASE_TOKEN }}"
         
         #14 Create Release
       - name: Create Release
