@@ -40,7 +40,7 @@ class WebHomePage extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 30),
-                const CategoryIcons(),
+                //const CategoryIcons(),
                 const SizedBox(height: 30),
                 const SectionHeader("Recent Searches"),
                 BlocBuilder<SearchCubit, SearchState>(

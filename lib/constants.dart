@@ -5,7 +5,7 @@ class Constant{
   static const int blueColor= 0xFF3B82F6;
   static const int greenColor= 0xFF22C55E;
   static const int darkGreyColor= 0xFF6B7280;
-  static const String logoImage = "assets/image/logo.png";
+  static const String logoImage = "assets/image/applogo.png";
   static const String accessToekn = "acesstoken";
   static const String refreshToken="refreshtoken";
   static const String loginEndpoint = "auth/login";

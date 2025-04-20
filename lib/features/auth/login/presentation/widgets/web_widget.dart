@@ -68,12 +68,12 @@ class WebLoginPage extends StatelessWidget {
                           tag: 'imageAuth',
                             child: Image.asset('assets/image/login.jpg', height: 250)),
                         const SizedBox(height: 20),
-                        const Text('Email', style: TextStyle(
+                        const Text('Username', style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.start),
                         const SizedBox(height: 10),
                     
-                        Textfeildcustom(obsecure: false, label: 'Enter your Email',
+                        Textfeildcustom(obsecure: false, label: 'Enter your Username',
                           controller: email,
                         ),
                     

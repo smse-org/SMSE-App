@@ -37,3 +37,9 @@ class SearchError extends SearchState {
   @override
   List<Object> get props => [message];
 }
+class DeleteQuerySuccess extends SearchState {
+  final String message;
+  const DeleteQuerySuccess(this.message);
+  @override
+  List<Object> get props => [message];
+}

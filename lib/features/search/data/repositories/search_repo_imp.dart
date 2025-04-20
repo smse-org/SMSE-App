@@ -64,6 +64,28 @@ class SearchRepositoryImpl implements SearchRepository {
     }
   }
 
+  @override
+  Future<Either<Faliuer, String>> deleteQuery(int id) async{
+    try{
+      final response = await apiService.delete(
+        endpoint: "${Constant.searchEndpoint}/$id",
+      );
+
+      if (response["message"] is String) {
+        return Right(response["message"]);
+      } else {
+        return Left(ServerFailuer("Invalid response format from server"));
+      }
+
+    }on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
+    } catch (e) {
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
+    }
+  }
+
 
   
 

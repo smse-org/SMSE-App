@@ -84,6 +84,9 @@ class RecentSearches extends StatelessWidget {
           return TextHomeCard(
             title: result.text,
             onTap: () => onTextClicked(result.text),
+            onDelete: () {
+              context.read<SearchCubit>().deleteQuery(result.id);
+            },
           );
         },
       ).toList(),
@@ -121,8 +124,8 @@ class SearchSuggestions extends StatelessWidget {
 class TextHomeCard extends StatelessWidget {
   final String title;
   final VoidCallback? onTap;
-
-  const TextHomeCard({super.key, required this.title, this.onTap});
+  final VoidCallback? onDelete;
+  const TextHomeCard({super.key, required this.title, this.onTap, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +145,7 @@ class TextHomeCard extends StatelessWidget {
       child: ListTile(
         title: Text(title),
         onTap: onTap,
+        trailing: IconButton(onPressed:onDelete , icon: const Icon(Icons.close,color: Colors.red,)),
       ),
     );
   }

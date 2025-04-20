@@ -61,8 +61,13 @@ class MobileLayout extends StatelessWidget {
               break;
           }
         },
+        titleStyle:  TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color:context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,
+        ),
         tabs: [
-          TabData(icon: const Icon(Icons.home), title: "Home"),
+          TabData(icon: const Icon(Icons.home), title: "Home" ,),
           TabData(icon: const Icon(Icons.favorite), title: "Favorites"),
           TabData(icon: const Icon(Icons.person), title: "Profile"),
         ],

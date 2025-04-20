@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 import 'package:smse/features/home/presentation/screen/home_page_content.dart';
 import 'package:smse/features/home/presentation/widgets/searchbar.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
@@ -39,7 +40,7 @@ class MobileHomePage extends StatelessWidget {
             BlocBuilder<SearchCubit, SearchState>(
               builder: (context, state) {
                 if (state is SearchLoading) {
-                  return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                  return  Center(child: SpinKitCubeGrid(color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,));
                 } else if (state is QueriesSuccess) {
                   return RecentSearches(
                     results: state.searchQuery,
@@ -55,11 +56,11 @@ class MobileHomePage extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-            const SectionHeader("Search Suggestions"),
+            const SectionHeader("Search Suggestions" ),
             BlocBuilder<SearchCubit, SearchState>(
               builder: (context, state) {
                 if (state is SearchLoading) {
-                  return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                  return  Center(child: SpinKitCubeGrid(color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,));
                 } else if (state is QueriesSuccess) {
                   return SearchSuggestions(
                     results: state.searchQuery,

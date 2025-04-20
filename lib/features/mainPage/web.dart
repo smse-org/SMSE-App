@@ -24,7 +24,7 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
 
   final List<Widget> _pages = [
     const HomePage(),
-    const SearchPage(),
+   // const SearchPage(),
     const FavoritesPage(),
     ProfilePage(),
   ];
@@ -32,7 +32,7 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _pageController = PageController();
 
     // Listen for tab controller changes to update PageView
@@ -115,7 +115,7 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
           controller: _tabController,
           tabs: const [
             Tab(icon: Icon(Icons.home), text: "Home"),
-            Tab(icon: Icon(Icons.search), text: "Search"),
+           // Tab(icon: Icon(Icons.search), text: "Search"),
             Tab(icon: Icon(Icons.favorite), text: "Favorites"),
             Tab(icon: Icon(Icons.person), text: "Profile"),
           ],

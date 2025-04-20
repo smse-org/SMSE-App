@@ -33,6 +33,17 @@ class SearchCubit extends Cubit<SearchState> {
     );
   }
 
+  Future<void> deleteQuery(int id) async {
+    emit(SearchLoading());
+    final result = await searchRepository.deleteQuery(id);
+    result.fold(
+      (failure) => emit(SearchError(failure.errMessage)),
+      (message) => emit(DeleteQuerySuccess(message)),
+    );
+  }
+
 
 
 }
+
+
