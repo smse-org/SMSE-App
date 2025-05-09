@@ -1,139 +1,257 @@
 import 'dart:io'; // For handling file paths
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart'; // For downloading files
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:smse/constants.dart';
+import 'package:smse/features/mainPage/model/content.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
+import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
 
 class FilePreviewMobile extends StatefulWidget {
-  const FilePreviewMobile({super.key});
+  const FilePreviewMobile({super.key, required this.contentModel});
+  final ContentModel contentModel;
+
   @override
   FilePreviewMobileState createState() => FilePreviewMobileState();
 }
 
 class FilePreviewMobileState extends State<FilePreviewMobile> {
-  double downloadProgress = 0;
-  bool isDownloading = false;
-  String downloadMessage = '';
+  String? downloadedFilePath;
 
-  // Simulating file download
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom + 56,
+          left: 16,
+          right: 16,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _checkAndRequestPermissions() async {
+    if (!Platform.isAndroid) return true;
+
+    final deviceInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = deviceInfo.version.sdkInt;
+
+    // Android 13+ (API 33)
+    if (sdkInt >= 33) {
+      final mediaPermission = await Permission.photos.status;
+      if (mediaPermission.isGranted) return true;
+
+      if (mediaPermission.isPermanentlyDenied) {
+        return await _showPermissionDialog();
+      }
+
+      final result = await Permission.photos.request();
+      return result.isGranted;
+    }
+
+    // Android 11-12 (API 30-32)
+    if (sdkInt >= 30) {
+      final manageStatus = await Permission.manageExternalStorage.status;
+      if (manageStatus.isGranted) return true;
+
+      if (manageStatus.isPermanentlyDenied) {
+        return await _showPermissionDialog();
+      }
+
+      final result = await Permission.manageExternalStorage.request();
+      return result.isGranted;
+    }
+
+    // Android < 30
+    final storageStatus = await Permission.storage.status;
+    if (storageStatus.isGranted) return true;
+
+    if (storageStatus.isPermanentlyDenied) {
+      return await _showPermissionDialog();
+    }
+
+    final result = await Permission.storage.request();
+    return result.isGranted;
+  }
+  Future<bool> _showPermissionDialog() async {
+    bool? shouldOpenSettings = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Permission Required'),
+        content: const Text(
+          'Storage permissions are required to download files.\n'
+              'Please enable them in app settings.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          TextButton(
+            child: const Text('Open Settings'),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+              openAppSettings();
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpenSettings == true) {
+      await openAppSettings();
+      return false;
+    }
+    return false;
+  }
 
   Future<void> downloadFile() async {
-    // Request permissions
-    PermissionStatus status = await Permission.storage.request();
+    bool hasPermission = await _checkAndRequestPermissions();
 
-    if (status.isGranted) {
-      setState(() {
-        isDownloading = true;
-        downloadMessage = 'Starting download...';
-      });
-
+    if (hasPermission) {
       try {
-        Dio dio = Dio();
+        // Get the file path from content model
+        String filePath = widget.contentModel.contentPath;
+        
+        // Get the content ID
+        int? contentId = widget.contentModel.id;
 
-        // Replace with actual file URL to download
-        String fileUrl = 'https://www.tutorialspoint.com/flutter/flutter_tutorial.pdf';
-        // Use path_provider to get the correct path
-        Directory? directory = await getExternalStorageDirectory();
-        String savePath = '${directory?.path}/flutter.pdf'; // Safe path
+        if (contentId == null) {
+          _showSnackBar('Invalid content ID', isError: true);
+          return;
+        }
 
-        await dio.download(
-          fileUrl,
-          savePath,
-          onReceiveProgress: (received, total) {
-            if (total != -1) {
-              setState(() {
-                downloadProgress = (received / total) * 100;
-                downloadMessage = 'Downloading: ${downloadProgress.toStringAsFixed(0)}%';
-              });
-            }
-          },
-        );
-
-        setState(() {
-          downloadMessage = 'Download complete!';
-        });
+        // Trigger download through cubit with full file path
+        context.read<ContentCubit>().downloadFile(contentId, filePath);
       } catch (e) {
-        setState(() {
-          downloadMessage = 'Download failed: $e';
-        });
-      } finally {
-        setState(() {
-          isDownloading = false;
-        });
+        _showSnackBar('Error preparing download: $e', isError: true);
       }
     } else {
-      setState(() {
-        downloadMessage = 'Permission denied!';
-      });
+      _showSnackBar('Storage permission is required to download files', isError: true);
+    }
+  }
+
+  Future<void> shareFile() async {
+    if (downloadedFilePath != null && File(downloadedFilePath!).existsSync()) {
+      await Share.shareXFiles(
+        [XFile(downloadedFilePath!)],
+        text: 'Check out this file: ${widget.contentModel.contentPath.split('/').last}',
+      );
+    } else {
+      _showSnackBar('Please download the file first before sharing', isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height: 300,
-            margin: const EdgeInsets.symmetric(vertical: 24.0 , horizontal: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[300],
-              border: Border.all(color: Colors.grey[800]!),
-            ),
-            alignment: Alignment.center,
-            child: const Text(
-              "File Preview",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(Constant.blackColor),
-                  side: const BorderSide(color: Colors.white),
-                  padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
-                ),
-                child: const Text("Share", style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold)),
-              ),
-              ElevatedButton(
-                onPressed: isDownloading ? null : downloadFile, // Disable button if downloading
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(Constant.whiteColor),
-                  side: const BorderSide(color: Colors.black),
-                  padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
-                ),
-                child: const Text("Save", style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-          if (isDownloading)
+    return BlocListener<ContentCubit, ContentState>(
+      listener: (context, state) {
+        if (state is FileDownloaded) {
+          downloadedFilePath = state.filePath;
+          _showSnackBar('File downloaded successfully');
+        } else if (state is ContentError) {
+          _showSnackBar('Error: ${state.message}', isError: true);
+        }
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
             Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  LinearProgressIndicator(value: downloadProgress / 100),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(downloadMessage, style: const TextStyle(fontSize: 16)),
+              height: 300,
+              margin: const EdgeInsets.symmetric(vertical: 24.0 , horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[300],
+                border: Border.all(color: Colors.grey[800]!),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "File Preview",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: shareFile,
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(Constant.blackColor),
+                    side: const BorderSide(color: Colors.white),
+                    padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
                   ),
+                  child: const Text("Share", style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold)),
+                ),
+                BlocBuilder<ContentCubit, ContentState>(
+                  builder: (context, state) {
+                    bool isDownloading = state is FileDownloading;
+                    return ElevatedButton(
+                      onPressed: isDownloading ? null : downloadFile,
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(Constant.whiteColor),
+                        side: const BorderSide(color: Colors.black),
+                        padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
+                      ),
+                      child: Text(
+                        isDownloading ? "Downloading..." : "Save",
+                        style: const TextStyle(color: Colors.black , fontWeight: FontWeight.bold)
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            BlocBuilder<ContentCubit, ContentState>(
+              builder: (context, state) {
+                if (state is FileDownloading) {
+                  return Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        LinearProgressIndicator(value: state.progress / 100),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Downloading: ${state.progress.toStringAsFixed(0)}%',
+                            style: const TextStyle(fontSize: 16)
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "File Details",
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text("Name: ${widget.contentModel.contentPath.split('/').last}"),
+                  Text("Size: ${widget.contentModel.contentSize} bytes"),
+                  Text("Upload Date: ${widget.contentModel.uploadDate.toString().split('.')[0]}"),
+                  Text("Status: ${widget.contentModel.contentTag ? "Tagged" : "Not Tagged"}"),
                 ],
               ),
             ),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              "File details and any relevant metadata can be displayed here.",
-              textAlign: TextAlign.start,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

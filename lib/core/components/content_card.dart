@@ -12,7 +12,7 @@ class ContentCardWeb extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         // Navigate to the details page
-        Navigator.push(context, MaterialPageRoute(builder: (context) =>  const FileViewerPage()));
+       // Navigator.push(context, MaterialPageRoute(builder: (context) =>  const FileViewerPage()));
       },
       child: Card(
         child: Padding(

@@ -6,5 +6,5 @@ abstract class DisplayContentRepo{
   Future<Either<Faliuer,List<ContentModel>>>getContent();
   Future<Either<Faliuer,void>>deleteContent({required int id});
   Future<Either<Faliuer, String>> downloadContent({required int id , required String fileName});
-
+  Future<Either<Faliuer, void>> toggleContentTag({required int id, required bool isTagged});
 }

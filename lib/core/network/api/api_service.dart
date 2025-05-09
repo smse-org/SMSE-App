@@ -138,6 +138,33 @@ class ApiService {
       throw Exception('Unexpected error during file download: $e');
     }
   }
+
+  // PUT request
+  Future<Map<String, dynamic>> put({
+    required String endpoint,
+    required dynamic data,
+    bool? token = false,
+  }) async {
+    try {
+      final response = await _dio.put(
+        "$_baseUrl$endpoint",
+        data: data,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            if (token == true)
+              'Authorization': 'Bearer ${await CachedData.getData(Constant.accessToekn)}',
+          },
+        ),
+      );
+      return _handleResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('Unexpected error during PUT request: $e');
+    }
+  }
+
   // Handle API responses
   dynamic _handleResponse(Response response) {
     if (response.statusCode == 200 || response.statusCode == 201) {

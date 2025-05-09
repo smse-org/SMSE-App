@@ -65,3 +65,12 @@ class FileDownloaded extends ContentState {
   @override
   List<Object?> get props => [filePath];
 }
+
+// Content Tagging States
+class ContentTagging extends ContentState {
+  const ContentTagging();
+}
+
+class ContentTagged extends ContentState {
+  const ContentTagged();
+}

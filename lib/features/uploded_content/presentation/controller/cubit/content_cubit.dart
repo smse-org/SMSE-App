@@ -37,5 +37,13 @@ class ContentCubit extends Cubit<ContentState> {
     );
   }
 
-
+  void toggleContentTag(int id, bool isTagged) async {
+    emit(const ContentTagging());
+    final result = await repository.toggleContentTag(id: id, isTagged: isTagged);
+    result.fold(
+          (failure) => emit(ContentError(failure.errMessage)),
+          (_) => emit(const ContentTagged()),
+    );
+    fetchContents(); // Refresh contents after tagging
+  }
 }
