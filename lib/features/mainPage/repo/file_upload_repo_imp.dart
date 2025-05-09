@@ -17,10 +17,10 @@ class FileUploadRepoImp extends FileUploadRep {
       final fileName = filepath.split('/').last; // Extract the file name
       formatData.files.add(
         MapEntry(
-          'file', // Field name expected by the API
+          'file',
           await MultipartFile.fromFile(
             filepath,
-            filename: fileName, // Use the actual file name
+            filename: fileName,
           ),
         ),
       );

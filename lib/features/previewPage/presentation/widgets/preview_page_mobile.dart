@@ -8,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 
 class FilePreviewMobile extends StatefulWidget {
   const FilePreviewMobile({super.key});
-
   @override
   FilePreviewMobileState createState() => FilePreviewMobileState();
 }

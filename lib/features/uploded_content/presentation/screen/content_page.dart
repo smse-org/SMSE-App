@@ -79,7 +79,7 @@ class ContentMobilePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const FileViewerPage(),
+                            builder: (context) =>  FileViewerPage(contentModel:  content,),
                           ),
                         );
                       },

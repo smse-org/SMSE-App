@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smse/features/mainPage/model/content.dart';
 import 'package:smse/features/previewPage/presentation/widgets/preview_page_mobile.dart';
 import 'package:smse/features/previewPage/presentation/widgets/preview_page_web.dart';
 class FileViewerPage extends StatelessWidget {
-  const FileViewerPage({super.key});
-
+  const FileViewerPage({super.key, required this.contentModel});
+  final ContentModel contentModel;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
