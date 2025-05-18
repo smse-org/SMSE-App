@@ -20,7 +20,7 @@ abstract class AppRouter {
   static const String login = '/login';
   static const String signUp = '/signup';
   static const String searchAnimation = '/search-animation';
-  static const String contentPage ="/content";
+  static const String contentPage = "/content";
   static late final Function toggleTheme; // Declare toggleTheme as a late variable
 
   static final router = GoRouter(
@@ -56,11 +56,11 @@ abstract class AppRouter {
         routes: [
           GoRoute(
             path: home,
-            builder: (context, state) =>  const HomePage(),
+            builder: (context, state) => const HomePage(),
           ),
           GoRoute(
             path: search,
-            builder: (context, state){
+            builder: (context, state) {
               final searchResults = state.extra as List<SearchResult>?;
               return SearchPage(searchResults: searchResults);
             },
@@ -71,13 +71,11 @@ abstract class AppRouter {
           ),
           GoRoute(
             path: profile,
-            builder: (context, state) =>  ProfilePage(),
+            builder: (context, state) => ProfilePage(),
           ),
-
-
           GoRoute(
             path: contentPage,
-            builder: (context, state) =>  const ContentPage(),
+            builder: (context, state) => const ContentPage(),
           ),
         ],
       ),

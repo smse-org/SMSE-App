@@ -24,9 +24,9 @@ class MobileLayout extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () => GoRouter.of(context).push(AppRouter.searchAnimation), // Example navigation
-        backgroundColor: Colors.black,
+        backgroundColor: themeMode == ThemeMode.light ? Colors.white : Colors.black,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80)),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: themeMode == ThemeMode.light ? Colors.black : Colors.white),
       ),
       appBar: AppBar(
         title: const Text("SMSE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -52,7 +52,6 @@ class MobileLayout extends StatelessWidget {
             case 0:
               context.go('/home');
               break;
-
             case 1:
               context.go('/favorites');
               break;
@@ -61,13 +60,13 @@ class MobileLayout extends StatelessWidget {
               break;
           }
         },
-        titleStyle:  TextStyle(
+        titleStyle: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color:context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,
+          color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,
         ),
         tabs: [
-          TabData(icon: const Icon(Icons.home), title: "Home" ,),
+          TabData(icon: const Icon(Icons.home), title: "Home"),
           TabData(icon: const Icon(Icons.favorite), title: "Favorites"),
           TabData(icon: const Icon(Icons.person), title: "Profile"),
         ],

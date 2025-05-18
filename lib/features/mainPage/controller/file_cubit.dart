@@ -16,10 +16,10 @@ class FileUploadCubit extends Cubit<FileUploadState> {
       );
 
       response.fold(
-            (failure) {
+        (failure) {
           emit(FileUploadFailure(failure.errMessage));
         },
-            (success) {
+        (success) {
           emit(FileUploadSuccess(success));
         },
       );

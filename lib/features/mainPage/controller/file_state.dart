@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:equatable/equatable.dart';
 import 'package:smse/features/mainPage/model/content.dart';
 
@@ -14,9 +10,7 @@ abstract class FileUploadState extends Equatable {
 
 class FileUploadInitial extends FileUploadState {}
 
-class FileUploadInProgress extends FileUploadState {
-
-}
+class FileUploadInProgress extends FileUploadState {}
 
 class FileUploadSuccess extends FileUploadState {
   final ContentModel response;

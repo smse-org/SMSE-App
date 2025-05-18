@@ -4,7 +4,8 @@ class Textfeildcustom extends StatefulWidget {
   final String label;
   final bool obsecure; // Whether the text field should have hidden text (for password)
   final TextEditingController controller;
-  const Textfeildcustom({super.key, required this.label, required this.obsecure, required this.controller});
+  final Function(String) onChanged; // Callback for text changes
+  const Textfeildcustom({super.key, required this.label, required this.obsecure, required this.controller, required this.onChanged});
 
   @override
   TextfeildcustomState createState() => TextfeildcustomState();
@@ -48,6 +49,7 @@ class TextfeildcustomState extends State<Textfeildcustom> {
         )
             : null, // No icon for non-password fields
       ),
+      onChanged: widget.onChanged,
     );
   }
 }

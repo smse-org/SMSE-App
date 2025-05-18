@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smse/constants.dart';
 import 'package:smse/features/mainPage/model/content.dart';
+import 'package:smse/features/previewPage/presentation/widgets/file_preview_widget.dart';
 
 class FilePreviewWeb extends StatelessWidget {
   const FilePreviewWeb({super.key, required this.contentModel});
@@ -13,16 +14,10 @@ class FilePreviewWeb extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            FilePreviewWidget(
+              contentModel: contentModel,
               width: 600,
               height: 400,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[300],
-                border: Border.all(color: Colors.grey[800]!),
-              ),
-              child: const Text("File Preview", style: TextStyle(fontSize: 24)),
             ),
             const SizedBox(height: 20),
             Container(

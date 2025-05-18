@@ -8,6 +8,7 @@ import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cub
 import 'package:smse/features/home/presentation/screen/homapage.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
+
 class WebLayout extends StatefulWidget {
   final VoidCallback toggleTheme;
   final ThemeMode themeMode;
@@ -24,7 +25,6 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
 
   final List<Widget> _pages = [
     const HomePage(),
-   // const SearchPage(),
     const FavoritesPage(),
     ProfilePage(),
   ];
@@ -115,7 +115,6 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
           controller: _tabController,
           tabs: const [
             Tab(icon: Icon(Icons.home), text: "Home"),
-           // Tab(icon: Icon(Icons.search), text: "Search"),
             Tab(icon: Icon(Icons.favorite), text: "Favorites"),
             Tab(icon: Icon(Icons.person), text: "Profile"),
           ],
@@ -199,7 +198,7 @@ class FileUploadDialogState extends State<FileUploadDialog> {
         if (progress < 100)
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Allow user to cancel upload
+              Navigator.pop(context);
             },
             child: const Text("Cancel"),
           ),

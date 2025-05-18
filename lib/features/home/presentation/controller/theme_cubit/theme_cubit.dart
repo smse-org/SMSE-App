@@ -15,7 +15,7 @@ class ThemeCubit extends Cubit<ThemeMode> {
   // Toggle theme and save preference
   Future<void> toggleTheme() async {
     ThemeMode newMode = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-     CachedData.storeData('isDark', newMode == ThemeMode.dark);
+    CachedData.storeData('isDark', newMode == ThemeMode.dark);
     emit(newMode);
   }
 }

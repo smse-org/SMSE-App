@@ -8,7 +8,7 @@ import 'package:smse/features/mainPage/controller/file_state.dart';
 class FileUploadProgressDialog extends StatelessWidget {
   final List<String> files;
 
-  const FileUploadProgressDialog({super.key,  required this.files});
+  const FileUploadProgressDialog({super.key, required this.files});
 
   @override
   Widget build(BuildContext context) {

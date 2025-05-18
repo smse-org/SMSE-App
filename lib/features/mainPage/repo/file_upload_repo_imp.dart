@@ -33,7 +33,6 @@ class FileUploadRepoImp extends FileUploadRep {
         token: true,
       );
 
-
       if (response['message'] == "Content created successfully" && response['content'] != null) {
         return Right(ContentModel.fromJson(response['content']));
       } else {

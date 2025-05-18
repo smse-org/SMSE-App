@@ -8,6 +8,7 @@ import 'package:smse/features/mainPage/model/content.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/features/previewPage/presentation/widgets/file_preview_widget.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
 
@@ -164,93 +165,88 @@ class FilePreviewMobileState extends State<FilePreviewMobile> {
         }
       },
       child: Scaffold(
-        body: Column(
-          children: [
-            Container(
-              height: 300,
-              margin: const EdgeInsets.symmetric(vertical: 24.0 , horizontal: 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[300],
-                border: Border.all(color: Colors.grey[800]!),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              FilePreviewWidget(
+                contentModel: widget.contentModel,
+                width: MediaQuery.of(context).size.width - 32,
+                height: 300,
               ),
-              alignment: Alignment.center,
-              child: const Text(
-                "File Preview",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: shareFile,
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(Constant.blackColor),
-                    side: const BorderSide(color: Colors.white),
-                    padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
-                  ),
-                  child: const Text("Share", style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold)),
-                ),
-                BlocBuilder<ContentCubit, ContentState>(
-                  builder: (context, state) {
-                    bool isDownloading = state is FileDownloading;
-                    return ElevatedButton(
-                      onPressed: isDownloading ? null : downloadFile,
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(Constant.whiteColor),
-                        side: const BorderSide(color: Colors.black),
-                        padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
-                      ),
-                      child: Text(
-                        isDownloading ? "Downloading..." : "Save",
-                        style: const TextStyle(color: Colors.black , fontWeight: FontWeight.bold)
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            BlocBuilder<ContentCubit, ContentState>(
-              builder: (context, state) {
-                if (state is FileDownloading) {
-                  return Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        LinearProgressIndicator(value: state.progress / 100),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Downloading: ${state.progress.toStringAsFixed(0)}%',
-                            style: const TextStyle(fontSize: 16)
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text(
-                    "File Details",
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ElevatedButton(
+                    onPressed: shareFile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(Constant.blackColor),
+                      side: const BorderSide(color: Colors.white),
+                      padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
+                    ),
+                    child: const Text("Share", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(height: 8),
-                  Text("Name: ${widget.contentModel.contentPath.split('/').last}"),
-                  Text("Size: ${widget.contentModel.contentSize} bytes"),
-                  Text("Upload Date: ${widget.contentModel.uploadDate.toString().split('.')[0]}"),
-                  Text("Status: ${widget.contentModel.contentTag ? "Tagged" : "Not Tagged"}"),
+                  BlocBuilder<ContentCubit, ContentState>(
+                    builder: (context, state) {
+                      bool isDownloading = state is FileDownloading;
+                      return ElevatedButton(
+                        onPressed: isDownloading ? null : downloadFile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(Constant.whiteColor),
+                          side: const BorderSide(color: Colors.black),
+                          padding: const EdgeInsets.fromLTRB(60, 15, 60, 15),
+                        ),
+                        child: Text(
+                          isDownloading ? "Downloading..." : "Save",
+                          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
-            ),
-          ],
+              BlocBuilder<ContentCubit, ContentState>(
+                builder: (context, state) {
+                  if (state is FileDownloading) {
+                    return Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          LinearProgressIndicator(value: state.progress / 100),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Downloading: ${state.progress.toStringAsFixed(0)}%',
+                              style: const TextStyle(fontSize: 16)
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "File Details",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text("Name: ${widget.contentModel.contentPath.split('/').last}"),
+                    Text("Size: ${widget.contentModel.contentSize} bytes"),
+                    Text("Upload Date: ${widget.contentModel.uploadDate.toString().split('.')[0]}"),
+                    Text("Status: ${widget.contentModel.contentTag ? "Tagged" : "Not Tagged"}"),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -51,6 +51,7 @@ class SearchAnimationPageState extends State<SearchAnimationPage> {
       GoRouter.of(context).pop();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

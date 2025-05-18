@@ -28,7 +28,6 @@ class ApiService {
     }
   }
 
-
   // POST request
   Future<Map<String, dynamic>> post({
     required String endpoint,
@@ -64,7 +63,6 @@ class ApiService {
     }
   }
 
-
   Future<Map<String, dynamic>> postContent({
     required String endpoint,
     required dynamic data,
@@ -99,7 +97,6 @@ class ApiService {
     }
   }
 
-
   // DELETE request
   Future<Map<String, dynamic>> delete({required String endpoint}) async {
     try {
@@ -130,7 +127,6 @@ class ApiService {
         savePath,
         onReceiveProgress: onReceiveProgress,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
-
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -178,7 +174,6 @@ class ApiService {
     }
   }
 
-
   Exception _handleDioError(DioException e) {
     String message = "Unexpected error occurred";
 
@@ -194,6 +189,4 @@ class ApiService {
 
     return Exception('API Error: $message');
   }
-
-
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smse/core/components/custom_button.dart';
 import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/routes/app_router.dart';
+import 'package:smse/core/utililes/validators.dart';
 import 'package:smse/features/auth/login/data/model/user.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_cubit.dart';
 import 'package:smse/features/auth/login/presentation/controller/cubit/login_state.dart';
@@ -83,9 +84,45 @@ class MobileLoginPageState extends State<MobileLoginPage> {
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
-                  Textfeildcustom(obsecure: false, label: 'Enter your Username', controller: emailController),
+                  Textfeildcustom(
+                    obsecure: false,
+                    label: 'Enter your Username',
+                    controller: emailController,
+                    onChanged: (value) {
+                      setState(() {}); // Trigger rebuild to show validation
+                    },
+                  ),
+                  if (emailController.text.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        Validators.getUsernameError(emailController.text) ?? '',
+                        style: TextStyle(
+                          color: Validators.getUsernameError(emailController.text) == null ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 10),
-                  Textfeildcustom(obsecure: true, label: 'Enter your password', controller: passwordController),
+                  Textfeildcustom(
+                    obsecure: true,
+                    label: 'Enter your password',
+                    controller: passwordController,
+                    onChanged: (value) {
+                      setState(() {}); // Trigger rebuild to show validation
+                    },
+                  ),
+                  if (passwordController.text.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        Validators.getPasswordError(passwordController.text) ?? '',
+                        style: TextStyle(
+                          color: Validators.getPasswordError(passwordController.text) == null ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 20),
                   CustomButton(
                     color: Colors.black87,
@@ -102,7 +139,6 @@ class MobileLoginPageState extends State<MobileLoginPage> {
                     colorText: Colors.white,
                     onPressed: () => GoRouter.of(context).push(AppRouter.signUp),
                   ),
-
                 ],
               ),
             );
@@ -111,9 +147,8 @@ class MobileLoginPageState extends State<MobileLoginPage> {
       ),
     );
   }
+
   bool _validateFields(BuildContext context) {
-
-
     if (passwordController.text.isEmpty || emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
@@ -121,7 +156,22 @@ class MobileLoginPageState extends State<MobileLoginPage> {
       return false;
     }
 
+    String? usernameError = Validators.getUsernameError(emailController.text);
+    if (usernameError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(usernameError)),
+      );
+      return false;
+    }
+
+    String? passwordError = Validators.getPasswordError(passwordController.text);
+    if (passwordError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(passwordError)),
+      );
+      return false;
+    }
+
     return true;
   }
-
 }

@@ -36,7 +36,7 @@ class ServerFailuer extends Faliuer {
         return ServerFailuer("Unexpected certificate error.");
       case DioExceptionType.connectionError:
         return ServerFailuer("No Internet Connection.");
-      }
+    }
   }
 
   factory ServerFailuer.fromResponse(int? statusCode, dynamic response) {
@@ -51,19 +51,16 @@ class ServerFailuer extends Faliuer {
           response["msg"] ??
           response["message"] ??
           jsonEncode(response); // Fallback: return full response as string
-    } else if(response is String){
+    } else if (response is String) {
       if (response.contains("<html") || response.contains("<!DOCTYPE html>")) {
         errorMessage = "Error occurred on server side";
       } else {
         errorMessage = response; // Plain text error message
       }
-
-    }else{
+    } else {
       errorMessage = response.toString();
-
     }
 
     return ServerFailuer(errorMessage);
   }
-
 }

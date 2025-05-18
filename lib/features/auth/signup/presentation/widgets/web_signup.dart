@@ -8,12 +8,13 @@ import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/utililes/validate_helper.dart';
+import 'package:smse/core/utililes/validators.dart';
 import 'package:smse/features/auth/signup/data/model/user_model.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_cubit.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_state.dart';
 
 class WebSignup extends StatefulWidget {
-   const WebSignup({super.key});
+  const WebSignup({super.key});
 
   @override
   State<WebSignup> createState() => _WebSignupState();
@@ -21,19 +22,17 @@ class WebSignup extends StatefulWidget {
 
 class _WebSignupState extends State<WebSignup> {
   TextEditingController name = TextEditingController();
-
   TextEditingController email = TextEditingController();
-
   TextEditingController password = TextEditingController();
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     name.dispose();
     email.dispose();
     password.dispose();
+    super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final signUpCubit = BlocProvider.of<SignupCubit>(context);
@@ -43,23 +42,22 @@ class _WebSignupState extends State<WebSignup> {
         child: Container(
           width: 400,
           padding: const EdgeInsets.all(16.0),
-          child: BlocConsumer<SignupCubit,SignUpState>(
-            listener: (context,state){
-              if(state is SignupFailureState){
+          child: BlocConsumer<SignupCubit, SignUpState>(
+            listener: (context, state) {
+              if (state is SignupFailureState) {
                 GoRouter.of(context).pushReplacement(AppRouter.login);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ServerFailuer(state.message).errMessage
-                )));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(ServerFailuer(state.message).errMessage)),
+                );
               }
 
-              if(state is SignupSuccessState){
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Signup Successfully'),
-                ));
-
+              if (state is SignupSuccessState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Signup Successfully')),
+                );
               }
-
             },
-            builder: (context,state) {
+            builder: (context, state) {
               if (state is SignupLoadingState) {
                 return const Center(child: SpinKitCubeGrid(color: Colors.black87));
               }
@@ -84,77 +82,111 @@ class _WebSignupState extends State<WebSignup> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                   Textfeildcustom(obsecure: false, label: "Enter Name",
-                  controller: name,
+                  Textfeildcustom(
+                    obsecure: false,
+                    label: "Enter Username",
+                    controller: name,
+                    onChanged: (value) {
+                      setState(() {
+                      }); // Trigger rebuild to show validation
+                    },
                   ),
-
-
+                  if (name.text.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        Validators.getUsernameError(name.text) ?? '',
+                        style: TextStyle(
+                          color: Validators.getUsernameError(name.text) == null ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 12),
-                   Textfeildcustom(obsecure: false, label: "Enter Email",
-                  controller: email,
+                  Textfeildcustom(
+                    obsecure: false,
+                    label: "Enter Email",
+                    controller: email, onChanged: (String ) {  },
                   ),
-
-
                   const SizedBox(height: 12),
-                   Textfeildcustom(
-                      obsecure: true, label: "Enter password",
+                  Textfeildcustom(
+                    obsecure: true,
+                    label: "Enter password",
                     controller: password,
-                   ),
-
+                    onChanged: (value) {
+                      setState(() {}); // Trigger rebuild to show validation
+                    },
+                  ),
+                  if (password.text.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        Validators.getPasswordError(password.text) ?? '',
+                        style: TextStyle(
+                          color: Validators.getPasswordError(password.text) == null ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 24),
-                  CustomButton(color: Colors.black87,
+                  CustomButton(
+                    color: Colors.black87,
                     text: "Create Account",
                     colorText: Colors.white,
                     onPressed: () {
-                    if(!_validateFields(context)){
-                      return;
-                    }
-                    SignupModel user= SignupModel(
-                      username: name.text,
-                      email: email.text,
-                      password: password.text,
-                    );
-
-                    signUpCubit.signup(user);
-
-
-                    },)
+                      if (!_validateFields(context)) {
+                        return;
+                      }
+                      SignupModel user = SignupModel(
+                        username: name.text,
+                        email: email.text,
+                        password: password.text,
+                      );
+                      signUpCubit.signup(user);
+                    },
+                  ),
                 ],
               );
-            }),
+            },
+          ),
         ),
       ),
     );
   }
 
-   bool _validateFields(BuildContext context) {
-     String e = email.text.trim();
-     String username=name.text;
-     if (password.text.isEmpty || email.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text("Please fill all fields")),
-       );
-       return false;
-     }
-     if(password.text.length<7){
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text("Password must be at least 7 characters")),
-       );
-       return false;
-     }
-     if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(username)) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text("Username must contain only letters and numbers, no spaces or symbols allowed")),
-       );
-       return false;
-     }
+  bool _validateFields(BuildContext context) {
+    String e = email.text.trim();
+    String username = name.text;
 
-     if (!ValidationHelper.isValidEmail(e)) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text("Invalid email format")),
-       );
-       return false;
-     }
-     return true;
-   }
+    if (password.text.isEmpty || email.text.isEmpty || username.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
+      );
+      return false;
+    }
+
+    String? usernameError = Validators.getUsernameError(username);
+    if (usernameError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(usernameError)),
+      );
+      return false;
+    }
+
+    String? passwordError = Validators.getPasswordError(password.text);
+    if (passwordError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(passwordError)),
+      );
+      return false;
+    }
+
+    if (!ValidationHelper.isValidEmail(e)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid email format")),
+      );
+      return false;
+    }
+    return true;
+  }
 }

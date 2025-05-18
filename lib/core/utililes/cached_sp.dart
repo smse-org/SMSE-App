@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CachedData {
   static late SharedPreferences prefs;
 
-  static cachInit() async {
+  static Future<void> cachInit() async {
     prefs = await SharedPreferences.getInstance();
   }
 
@@ -18,7 +18,6 @@ class CachedData {
       prefs.setBool(key, value);
     }
   }
-
 
   static dynamic getData(String key) {
     return prefs.get(key);

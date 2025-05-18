@@ -6,11 +6,11 @@ import 'package:smse/core/components/text_field_custom.dart';
 import 'package:smse/core/error/failuers.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/utililes/validate_helper.dart';
+import 'package:smse/core/utililes/validators.dart';
 import 'package:smse/features/auth/signup/data/model/user_model.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_cubit.dart';
 import 'package:smse/features/auth/signup/presentation/controller/cubit/signup_state.dart';
-
-import '../../../../../constants.dart';
+import 'package:smse/constants.dart';
 
 class MobileSignup extends StatefulWidget {
   const MobileSignup({super.key});
@@ -74,25 +74,64 @@ class MobileSignupState extends State<MobileSignup> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Textfeildcustom(controller: nameController, label: "Enter Name", obsecure: false),
+                  Textfeildcustom(
+                    controller: nameController,
+                    label: "Enter Username",
+                    obsecure: false,
+                    onChanged: (value) {
+                      setState(() {}); // Trigger rebuild to show validation
+                    },
+                  ),
+                  if (nameController.text.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        Validators.getUsernameError(nameController.text) ?? '',
+                        style: TextStyle(
+                          color: Validators.getUsernameError(nameController.text) == null ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 12),
-                  Textfeildcustom(controller: emailController, label: "Enter Email", obsecure: false),
+                  Textfeildcustom(
+                    controller: emailController,
+                    label: "Enter Email",
+                    obsecure: false, onChanged: (String ) {  },
+                  ),
                   const SizedBox(height: 12),
-                  Textfeildcustom(controller: passwordController, label: "Enter Password", obsecure: true),
+                  Textfeildcustom(
+                    controller: passwordController,
+                    label: "Enter Password",
+                    obsecure: true,
+                    onChanged: (value) {
+                      setState(() {}); // Trigger rebuild to show validation
+                    },
+                  ),
+                  if (passwordController.text.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        Validators.getPasswordError(passwordController.text) ?? '',
+                        style: TextStyle(
+                          color: Validators.getPasswordError(passwordController.text) == null ? Colors.green : Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 12),
                   CustomButton(
                     color: Colors.black87,
                     text: "Create Account",
                     colorText: Colors.white,
                     onPressed: () {
-                      SignupModel user = SignupModel(
-                        username: nameController.text,
-                        email: emailController.text,
-                        password: passwordController.text,
-                      );
-                      if (_validateFields(context)){
+                      if (_validateFields(context)) {
+                        SignupModel user = SignupModel(
+                          username: nameController.text,
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
                         BlocProvider.of<SignupCubit>(context).signup(user);
-
                       }
                     },
                   ),
@@ -104,24 +143,30 @@ class MobileSignupState extends State<MobileSignup> {
       ),
     );
   }
+
   bool _validateFields(BuildContext context) {
     String email = emailController.text.trim();
-    String username=nameController.text;
-    if (passwordController.text.isEmpty || emailController.text.isEmpty) {
+    String username = nameController.text;
+
+    if (passwordController.text.isEmpty || emailController.text.isEmpty || username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
       );
       return false;
     }
-    if(passwordController.text.length<7){
+
+    String? usernameError = Validators.getUsernameError(username);
+    if (usernameError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password must be at least 7 characters")),
+        SnackBar(content: Text(usernameError)),
       );
       return false;
     }
-    if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(username)) {
+
+    String? passwordError = Validators.getPasswordError(passwordController.text);
+    if (passwordError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Username must contain only letters and numbers, no spaces or symbols allowed")),
+        SnackBar(content: Text(passwordError)),
       );
       return false;
     }
