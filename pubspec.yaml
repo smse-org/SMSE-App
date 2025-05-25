@@ -59,6 +59,9 @@ dependencies:
   open_filex: ^4.7.0
   share_plus: ^11.0.0
   device_info_plus: ^11.4.0
+  image_picker: ^1.0.7
+  random_avatar: ^0.0.8
+  flutter_svg: ^2.0.9
 
 
 dev_dependencies:

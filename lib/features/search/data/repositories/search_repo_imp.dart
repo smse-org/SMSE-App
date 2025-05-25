@@ -48,13 +48,20 @@ class SearchRepositoryImpl implements SearchRepository {
     try {
       final response = await apiService.get(endpoint: Constant.searchEndpoint);
 
-      if (response is List) {
-        final queries = response.map((data) => SearchQuery.fromJson(data as Map<String, dynamic>)).toList();
-        return Right(queries);
-      } else {
-        throw Exception("Expected List<dynamic>, but got ${response.runtimeType}");
+      if (response is! Map<String, dynamic>) {
+        return Left(ServerFailuer("Invalid response format fro server"));
       }
 
+      if (response['queries'] is! List) {
+        return Left(ServerFailuer("Invalid queries format from server"));
+      }
+
+      final queriesList = response['queries'] as List;
+      final queries = queriesList
+          .map((data) => SearchQuery.fromJson(data as Map<String, dynamic>))
+          .toList();
+
+      return Right(queries);
     } on ServerFailuer catch (failure) {
       return Left(failure);
     } on DioException catch (dioError) {

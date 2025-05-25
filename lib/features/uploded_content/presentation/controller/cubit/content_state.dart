@@ -49,7 +49,7 @@ class ContentDeleted extends ContentState {
 
 // File Download States
 class FileDownloading extends ContentState {
-  final double progress; // Added progress tracking
+  final double progress;
 
   const FileDownloading(this.progress);
 
@@ -58,7 +58,7 @@ class FileDownloading extends ContentState {
 }
 
 class FileDownloaded extends ContentState {
-  final String filePath; // Added file path to open the file
+  final String filePath;
 
   const FileDownloaded(this.filePath);
 

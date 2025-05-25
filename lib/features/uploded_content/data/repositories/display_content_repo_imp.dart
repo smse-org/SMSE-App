@@ -105,6 +105,8 @@ class DisplayContentRepoImp extends DisplayContentRepo {
   Future<Either<Faliuer, List<ContentModel>>> getContent() async {
     try {
       final response = await apiService.get(endpoint: 'contents');
+      print(response);
+
       final List<dynamic> contentData = response['contents'];
       final contents = contentData.map((data) => ContentModel.fromJson(data)).toList();
       return Right(contents);
@@ -113,7 +115,7 @@ class DisplayContentRepoImp extends DisplayContentRepo {
     } on DioException catch (dioError) {
       return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      return Left(ServerFailuer("Unexpected error: \${e.toString()}"));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 
