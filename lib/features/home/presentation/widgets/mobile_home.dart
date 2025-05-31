@@ -34,13 +34,13 @@ class MobileHomePage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 20),
-           // const CategoryIcons(),
+            const ModalitySelector(),
             const SizedBox(height: 20),
             const SectionHeader("Recent Searches"),
             BlocBuilder<SearchCubit, SearchState>(
               builder: (context, state) {
                 if (state is SearchLoading) {
-                  return  Center(child: SpinKitCubeGrid(color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,));
+                  return Center(child: SpinKitCubeGrid(color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,));
                 } else if (state is QueriesSuccess) {
                   return RecentSearches(
                     results: state.searchQuery,

@@ -31,6 +31,28 @@ class SearchResult {
     return contentPath;
   }
 
+  String get contentType {
+    final extension = contentPath.split('.').last.toLowerCase();
+    switch (extension) {
+      case 'txt':
+      case 'doc':
+      case 'docx':
+      case 'pdf':
+        return 'text';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return 'image';
+      case 'mp3':
+      case 'wav':
+      case 'ogg':
+        return 'audio';
+      default:
+        return 'unknown';
+    }
+  }
+
   ContentModel toContentModel() {
     return ContentModel(
       id: contentId,

@@ -29,7 +29,7 @@ class SearchAnimationPageState extends State<SearchAnimationPage> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'png'],
+      allowedExtensions: ['jpeg', 'jpg', 'wav' , "txt"],
     );
 
     if (result != null) {

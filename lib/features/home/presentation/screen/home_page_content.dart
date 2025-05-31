@@ -45,9 +45,123 @@ class HomePageContent extends StatelessWidget {
   }
 }
 
+class ModalitySelector extends StatelessWidget {
+  const ModalitySelector({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: Text(
+            'Filter by Modality',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.light 
+                ? Colors.black87 
+                : Colors.white70,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.center,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _ModalityChip(
+                label: 'Text',
+                value: 'text',
+                icon: Icons.text_fields_rounded,
+              ),
+              _ModalityChip(
+                label: 'Image',
+                value: 'image',
+                icon: Icons.image_rounded,
+              ),
+              _ModalityChip(
+                label: 'Audio',
+                value: 'audio',
+                icon: Icons.audio_file_rounded,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
 
+class _ModalityChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
 
+  const _ModalityChip({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SearchCubit, SearchState>(
+      builder: (context, state) {
+        final isSelected = context.read<SearchCubit>().selectedModalities.contains(value);
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
+        return FilterChip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected 
+                  ? (isDark ? Colors.white : Colors.white)
+                  : (isDark ? Colors.white70 : Colors.black87),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected 
+                    ? (isDark ? Colors.white : Colors.white)
+                    : (isDark ? Colors.white70 : Colors.black87),
+                ),
+              ),
+            ],
+          ),
+          selected: isSelected,
+          onSelected: (selected) {
+            context.read<SearchCubit>().toggleModality(value);
+          },
+          backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+          selectedColor: Theme.of(context).primaryColor,
+          checkmarkColor: isDark ? Colors.white : Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: isSelected 
+                ? Theme.of(context).primaryColor
+                : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
+              width: 1,
+            ),
+          ),
+          elevation: 0,
+        );
+      },
+    );
+  }
+}
 
 class SectionHeader extends StatelessWidget {
   final String title;

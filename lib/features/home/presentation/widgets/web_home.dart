@@ -18,35 +18,37 @@ class WebHomePage extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
-
-          constraints: const BoxConstraints(maxWidth: double.infinity),
+          constraints: const BoxConstraints(maxWidth: 1200),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 60),
                 const Text(
-                  "Explore Beyond Keywords",
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  "Search beyond keywords",
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 32),
                 SearchBarCustom(
                   controller: _searchController,
                   onSearch: (query) {
                     context.read<SearchCubit>().search(query);
                   },
                 ),
-                const SizedBox(height: 30),
-                //const CategoryIcons(),
-                const SizedBox(height: 30),
+                const SizedBox(height: 32),
+                const ModalitySelector(),
+                const SizedBox(height: 32),
                 const SectionHeader("Recent Searches"),
                 BlocBuilder<SearchCubit, SearchState>(
                   builder: (context, state) {
                     if (state is SearchLoading) {
-                      return const Center(child: SpinKitCubeGrid(color: Colors.black));
+                      return const Center(
+                        child: SpinKitCubeGrid(
+                          color: Colors.black,
+                          size: 50.0,
+                        ),
+                      );
                     } else if (state is QueriesSuccess) {
                       return RecentSearches(
                         results: state.searchQuery,

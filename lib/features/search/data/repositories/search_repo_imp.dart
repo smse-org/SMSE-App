@@ -16,11 +16,25 @@ class SearchRepositoryImpl implements SearchRepository {
   SearchRepositoryImpl(this.apiService);
 
   @override
-  Future<Either<Faliuer, List<SearchResult>>> searchFiles(String query) async {
+  Future<Either<Faliuer, List<SearchResult>>> searchFiles(
+    String query, {
+    int? limit,
+    List<String>? modalities,
+  }) async {
     try {
+      final Map<String, dynamic> data = {"query": query};
+      
+      if (limit != null) {
+        data["limit"] = limit;
+      }
+      
+      if (modalities != null && modalities.isNotEmpty) {
+        data["modalities"] = modalities;
+      }
+
       final response = await apiService.post(
         endpoint: Constant.searchEndpoint,
-        data: jsonEncode({"query": query}),
+        data: jsonEncode(data),
         token: true,
       );
 

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/network/api/api_service.dart';
@@ -15,7 +16,7 @@ class App extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => ThemeCubit(
-            PreferencesRepositoryImpl(ApiService()),
+            PreferencesRepositoryImpl(ApiService(Dio())),
           ),
         ),
       ],
