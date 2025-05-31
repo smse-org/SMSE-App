@@ -62,6 +62,7 @@ dependencies:
   image_picker: ^1.0.7
   random_avatar: ^0.0.8
   flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
 
 
 dev_dependencies:

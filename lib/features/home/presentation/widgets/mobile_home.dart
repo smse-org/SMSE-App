@@ -14,71 +14,54 @@ class MobileHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _searchController = TextEditingController();
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 40),
-            const Text(
-              "Search beyond keywords",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            SearchBarCustom(
-              controller: _searchController,
-              onSearch: (query) {
-                context.read<SearchCubit>().search(query);
-              },
-            ),
-            const SizedBox(height: 20),
-            const ModalitySelector(),
-            const SizedBox(height: 20),
-            const SectionHeader("Recent Searches"),
-            BlocBuilder<SearchCubit, SearchState>(
-              builder: (context, state) {
-                if (state is SearchLoading) {
-                  return Center(child: SpinKitCubeGrid(color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,));
-                } else if (state is QueriesSuccess) {
-                  return RecentSearches(
-                    results: state.searchQuery,
+    return BlocBuilder<SearchCubit, SearchState>(
+      builder: (context, state) {
+        return Scaffold(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  TextField(
+                    onSubmitted: (value) {
+                      context.read<SearchCubit>().search(value);
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const ModalitySelector(),
+                  const SizedBox(height: 20),
+                  const SectionHeader('Recent Searches'),
+                  const SizedBox(height: 10),
+                  if (state is QueriesSuccess)
+                    RecentSearches(
+                      results: state.searchQuery,
+                      onTextClicked: (text) {
+                        context.read<SearchCubit>().search(text);
+                      },
+                    ),
+                  const SizedBox(height: 20),
+                  const SectionHeader('Suggested Searches'),
+                  const SizedBox(height: 10),
+                  SearchSuggestions(
                     onTextClicked: (text) {
-                      _searchController.text = text;
                       context.read<SearchCubit>().search(text);
                     },
-                  );
-                } else {
-                  return const Center(child: Text("No recent searches found"));
-                }
-              },
+                  ),
+                ],
+              ),
             ),
-
-            const SizedBox(height: 20),
-            const SectionHeader("Search Suggestions" ),
-            BlocBuilder<SearchCubit, SearchState>(
-              builder: (context, state) {
-                if (state is SearchLoading) {
-                  return  Center(child: SpinKitCubeGrid(color: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.black : Colors.white,));
-                } else if (state is QueriesSuccess) {
-                  return SearchSuggestions(
-                    results: state.searchQuery,
-                    onTextClicked: (text) {
-                      _searchController.text = text;
-                      context.read<SearchCubit>().search(text);
-                    },
-                  );
-                } else {
-                  return const Center(child: Text("No suggestions available"));
-                }
-              },
-            ),
-
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

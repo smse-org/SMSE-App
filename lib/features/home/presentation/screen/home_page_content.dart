@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smse/core/routes/app_router.dart';
+import 'package:smse/core/services/suggestions_service.dart';
 import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
@@ -67,8 +68,9 @@ class ModalitySelector extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.center,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           child: Wrap(
             alignment: WrapAlignment.center,
             spacing: 8,
@@ -115,48 +117,62 @@ class _ModalityChip extends StatelessWidget {
         final isSelected = context.read<SearchCubit>().selectedModalities.contains(value);
         final isDark = Theme.of(context).brightness == Brightness.dark;
         
-        return FilterChip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected 
-                  ? (isDark ? Colors.white : Colors.white)
-                  : (isDark ? Colors.white70 : Colors.black87),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected 
-                    ? (isDark ? Colors.white : Colors.white)
-                    : (isDark ? Colors.white70 : Colors.black87),
+        return TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: 0.95 + (value * 0.05),
+              child: FilterChip(
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        icon,
+                        key: ValueKey(isSelected),
+                        size: 18,
+                        color: isSelected 
+                          ? (isDark ? Colors.white : Colors.white)
+                          : (isDark ? Colors.white70 : Colors.black87),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isSelected 
+                          ? (isDark ? Colors.white : Colors.white)
+                          : (isDark ? Colors.white70 : Colors.black87),
+                      ),
+                    ),
+                  ],
                 ),
+                selected: isSelected,
+                onSelected: (selected) {
+                  context.read<SearchCubit>().toggleModality(value as String);
+                },
+                backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                selectedColor: Theme.of(context).primaryColor,
+                checkmarkColor: isDark ? Colors.white : Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: isSelected 
+                      ? Theme.of(context).primaryColor
+                      : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
+                    width: 1,
+                  ),
+                ),
+                elevation: 0,
               ),
-            ],
-          ),
-          selected: isSelected,
-          onSelected: (selected) {
-            context.read<SearchCubit>().toggleModality(value);
+            );
           },
-          backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
-          selectedColor: Theme.of(context).primaryColor,
-          checkmarkColor: isDark ? Colors.white : Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: isSelected 
-                ? Theme.of(context).primaryColor
-                : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
-              width: 1,
-            ),
-          ),
-          elevation: 0,
         );
       },
     );
@@ -210,23 +226,22 @@ class RecentSearches extends StatelessWidget {
 
 
 class SearchSuggestions extends StatelessWidget {
-  final List<SearchQuery> results;
   final Function(String) onTextClicked;
 
   const SearchSuggestions({
     super.key,
-    required this.results,
     required this.onTextClicked,
   });
 
   @override
   Widget build(BuildContext context) {
+    final suggestions = SuggestionsService.getRandomSuggestions();
     return Column(
-      children: results.take(4).map(
-            (result) {
+      children: suggestions.map(
+        (suggestion) {
           return TextHomeCard(
-            title: result.text,
-            onTap: () => onTextClicked(result.text),
+            title: suggestion,
+            onTap: () => onTextClicked(suggestion),
           );
         },
       ).toList(),
@@ -259,7 +274,12 @@ class TextHomeCard extends StatelessWidget {
       child: ListTile(
         title: Text(title),
         onTap: onTap,
-        trailing: IconButton(onPressed:onDelete , icon: const Icon(Icons.close,color: Colors.red,)),
+        trailing: onDelete != null
+            ? IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.close, color: Colors.red),
+              )
+            : null,
       ),
     );
   }

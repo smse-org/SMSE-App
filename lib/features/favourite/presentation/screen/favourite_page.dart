@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smse/core/components/shimmer_loading.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/favourite/presentation/widgets/favourite_page_mobile.dart';
 import 'package:smse/features/favourite/presentation/widgets/favourite_page_web.dart';
@@ -43,7 +44,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
         body: BlocBuilder<ContentCubit, ContentState>(
           builder: (context, state) {
             if (state is ContentLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 650) {
+                    return const FavoritesMobileShimmer();
+                  } else {
+                    return const FavoritesWebShimmer();
+                  }
+                },
+              );
             } else if (state is ContentLoaded) {
               final taggedContents = state.contents.where((content) => content.contentTag).toList();
 

@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'dart:io' as io;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -38,10 +39,13 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
   @override
   void initState() {
     super.initState();
-    _loadAvatar();
+    if (!kIsWeb) {
+      _loadAvatar();
+    }
   }
 
   Future<void> _loadAvatar() async {
+    if (kIsWeb) return;
     try {
       final path = await _avatarService.getAvatarPath();
       if (path != null) {
@@ -56,6 +60,7 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
   }
 
   Future<void> _pickImage() async {
+    if (kIsWeb) return;
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
@@ -66,7 +71,7 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
       );
       
       if (image != null) {
-        final savedPath = await _avatarService.saveAvatarToLocal(File(image.path));
+        final savedPath = await _avatarService.saveAvatarToLocal(io.File(image.path));
         setState(() {
           _avatarPath = savedPath;
           _isSvg = false;
@@ -96,6 +101,7 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
   }
 
   void _showAvatarOptions() {
+    if (kIsWeb) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -128,13 +134,13 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
                 // Random avatars
                 ..._randomAvatars.map((avatarId) => GestureDetector(
                   onTap: () async {
+                    if (kIsWeb) return;
                     try {
                       Navigator.pop(context);
                       final svgString = RandomAvatarString(avatarId);
-                      // Save the SVG string to a file
                       final localPath = await _avatarService.getLocalPath();
                       final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.svg';
-                      final file = File('$localPath/$fileName');
+                      final file = io.File('$localPath/$fileName');
                       await file.writeAsString(svgString);
                       await _avatarService.saveAvatarPath(file.path);
                       setState(() {
@@ -196,67 +202,82 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
               // Account Information
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: _showAvatarOptions,
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.grey[300],
-                          child: _avatarPath != null
-                              ? _isSvg
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(40),
-                                      child: SvgPicture.file(
-                                        File(_avatarPath!),
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.cover,
-                                        placeholderBuilder: (context) => const CircularProgressIndicator(),
-                                      ),
-                                    )
-                                  : ClipRRect(
-                                      borderRadius: BorderRadius.circular(40),
-                                      child: Image.file(
-                                        File(_avatarPath!),
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(Icons.error_outline, size: 40);
-                                        },
-                                      ),
-                                    )
-                              : Image.asset(
-                                  Constant.profileImage,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(Icons.error_outline, size: 40);
-                                  },
-                                ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
+                  if (!kIsWeb)
+                    GestureDetector(
+                      onTap: _showAvatarOptions,
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.grey[300],
+                            child: _avatarPath != null
+                                ? _isSvg
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(40),
+                                        child: SvgPicture.file(
+                                          io.File(_avatarPath!),
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
+                                          placeholderBuilder: (context) => const CircularProgressIndicator(),
+                                        ),
+                                      )
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(40),
+                                        child: Image.file(
+                                          io.File(_avatarPath!),
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return const Icon(Icons.error_outline, size: 40);
+                                          },
+                                        ),
+                                      )
+                                : Image.asset(
+                                    Constant.profileImage,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.error_outline, size: 40);
+                                    },
+                                  ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    )
+                  else
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey[300],
+                      child: Image.asset(
+                        Constant.profileImage,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.error_outline, size: 40);
+                        },
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 16),
                   BlocConsumer<ProfileCubit, ProfileState>(
                     listener: (context, state) {

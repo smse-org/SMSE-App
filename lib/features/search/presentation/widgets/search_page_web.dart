@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:smse/core/components/content_card.dart';
+import 'package:smse/core/components/shimmer_loading.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
@@ -28,7 +28,7 @@ class WebSearchView extends StatelessWidget {
 
   Widget _buildContent(SearchState state) {
     if (state is SearchLoading) {
-      return _buildSkeletonGrid();
+      return _buildShimmerGrid();
     } else if (state is SearchSucsess) {
       return _buildResultsGrid(state.searchResults);
     } else if (state is SearchError) {
@@ -49,26 +49,44 @@ class WebSearchView extends StatelessWidget {
     }
   }
 
-  Widget _buildSkeletonGrid() {
-    return Skeletonizer(
-      enabled: true,
-      child: GridView.builder(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(16.0),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: number,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 3 / 2,
-        ),
-        itemCount: 6, // Show more skeleton items
-        itemBuilder: (context, index) {
-          return const ContentCardWeb(
-            title: 'Loading content...',
-            relevanceScore: 95,
-          );
-        },
+  Widget _buildShimmerGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(16.0),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: number,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 3 / 2,
       ),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        return ShimmerLoading(
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const ShimmerText(width: 150, height: 24),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const ShimmerCircle(size: 16),
+                      const SizedBox(width: 4),
+                      const ShimmerText(width: 60, height: 14),
+                      const SizedBox(width: 16),
+                      const ShimmerCircle(size: 16),
+                      const SizedBox(width: 4),
+                      const ShimmerText(width: 80, height: 14),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -86,23 +104,58 @@ class WebSearchView extends StatelessWidget {
       );
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(16.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: number,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 3 / 2,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: GridView.builder(
+        key: ValueKey(results.length),
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(16.0),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: number,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 3 / 2,
+        ),
+        itemCount: results.length,
+        itemBuilder: (context, index) {
+          final result = results[index];
+          return AnimatedBuilder(
+            animation: Listenable.merge([
+              AnimationController(
+                vsync: Navigator.of(context),
+                duration: Duration(milliseconds: 300 + (index * 50)),
+              )..forward(),
+            ]),
+            builder: (context, child) {
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: AnimationController(
+                    vsync: Navigator.of(context),
+                    duration: Duration(milliseconds: 300 + (index * 50)),
+                  )..forward(),
+                  curve: Curves.easeOut,
+                ),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.1),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: AnimationController(
+                      vsync: Navigator.of(context),
+                      duration: Duration(milliseconds: 300 + (index * 50)),
+                    )..forward(),
+                    curve: Curves.easeOut,
+                  )),
+                  child: ContentCardWeb(
+                    title: 'Content ID: ${result.contentId}',
+                    relevanceScore: (result.similarityScore * 100).round(),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final result = results[index];
-        return ContentCardWeb(
-          title: 'Content ID: ${result.contentId}',
-          relevanceScore: (result.similarityScore * 100).round(),
-        );
-      },
     );
   }
 }

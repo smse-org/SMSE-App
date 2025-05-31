@@ -13,84 +13,79 @@ class WebHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _searchController = TextEditingController();
-
-    return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 60),
-                const Text(
-                  "Search beyond keywords",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 32),
-                SearchBarCustom(
-                  controller: _searchController,
-                  onSearch: (query) {
-                    context.read<SearchCubit>().search(query);
-                  },
-                ),
-                const SizedBox(height: 32),
-                const ModalitySelector(),
-                const SizedBox(height: 32),
-                const SectionHeader("Recent Searches"),
-                BlocBuilder<SearchCubit, SearchState>(
-                  builder: (context, state) {
-                    if (state is SearchLoading) {
-                      return const Center(
-                        child: SpinKitCubeGrid(
-                          color: Colors.black,
-                          size: 50.0,
+    return BlocBuilder<SearchCubit, SearchState>(
+      builder: (context, state) {
+        return Scaffold(
+          body: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 800),
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  const Text(
+                    "Search beyond keywords",
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 40),
+                  TextField(
+                    onSubmitted: (value) {
+                      context.read<SearchCubit>().search(value);
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  const ModalitySelector(),
+                  const SizedBox(height: 40),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SectionHeader('Recent Searches'),
+                            const SizedBox(height: 20),
+                            if (state is QueriesSuccess)
+                              RecentSearches(
+                                results: state.searchQuery,
+                                onTextClicked: (text) {
+                                  context.read<SearchCubit>().search(text);
+                                },
+                              ),
+                          ],
                         ),
-                      );
-                    } else if (state is QueriesSuccess) {
-                      return RecentSearches(
-                        results: state.searchQuery,
-                        onTextClicked: (text) {
-                          _searchController.text = text;
-                          context.read<SearchCubit>().search(text);
-                        },
-                      );
-                    } else {
-                      return const Center(child: Text("No recent searches found"));
-                    }
-                  },
-                ),
-
-                //  RecentSearches(),
-                const SizedBox(height: 30),
-                const SectionHeader("Search Suggestions"),
-                BlocBuilder<SearchCubit, SearchState>(
-                  builder: (context, state) {
-                    if (state is SearchLoading) {
-                      return const Center(child: SpinKitCubeGrid(color: Colors.black));
-                    } else if (state is QueriesSuccess) {
-                      return SearchSuggestions(
-                        results: state.searchQuery,
-                        onTextClicked: (text) {
-                          _searchController.text = text;
-                          context.read<SearchCubit>().search(text);
-                        },
-                      );
-                    } else {
-                      return const Center(child: Text("No suggestions available"));
-                    }
-                  },
-                ),
-
-                //SearchSuggestions(),
-                const SizedBox(height: 50),  // Additional spacing for web layout
-              ],
+                      ),
+                      const SizedBox(width: 40),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SectionHeader('Suggested Searches'),
+                            const SizedBox(height: 20),
+                            SearchSuggestions(
+                              onTextClicked: (text) {
+                                context.read<SearchCubit>().search(text);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
