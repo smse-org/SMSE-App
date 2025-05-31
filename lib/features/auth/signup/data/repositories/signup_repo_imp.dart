@@ -21,7 +21,6 @@ class SignUpRepoImp extends SignUpRepo {
       );
 
       if (response['msg'] == 'User created successfully') {
-        // ✅ Instead of parsing a user model from the response, just return the original signupModel
         return Right(signupModel);
       }
       return Left(ServerFailuer(response['msg'] ?? 'Signup failed'));

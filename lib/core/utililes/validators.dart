@@ -1,22 +1,12 @@
 class Validators {
   static bool isValidUsername(String username) {
-    // Username rules:
-    // - No spaces
-    // - No capital letters
-    // - Can contain numbers
-    // - No special characters
-    // - Only lowercase letters and numbers
+
     final usernameRegex = RegExp(r'^[a-z0-9]+$');
     return usernameRegex.hasMatch(username);
   }
 
   static bool isValidPassword(String password) {
-    // Password rules:
-    // - At least 7 characters
-    // - At least one special character
-    // - At least one capital letter
-    // - At least one small letter
-    // - At least one number
+  
     if (password.length < 7) return false;
 
     bool hasUpperCase = password.contains(RegExp(r'[A-Z]'));

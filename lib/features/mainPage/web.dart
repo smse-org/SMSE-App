@@ -10,10 +10,9 @@ import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
 
 class WebLayout extends StatefulWidget {
-  final VoidCallback toggleTheme;
   final ThemeMode themeMode;
 
-  const WebLayout({super.key, required this.toggleTheme, required this.themeMode});
+  const WebLayout({super.key, required this.themeMode});
 
   @override
   WebLayoutState createState() => WebLayoutState();
@@ -34,6 +33,9 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _pageController = PageController();
+
+    // Load theme from preferences when the layout is initialized
+    context.read<ThemeCubit>().loadThemeFromPreferences();
 
     // Listen for tab controller changes to update PageView
     _tabController.addListener(() {
@@ -103,12 +105,14 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
       appBar: AppBar(
         leading: Image.asset(Constant.logoImage),
         actions: [
-          BlocBuilder<ThemeCubit, ThemeMode>(builder: (context, themeMode) {
-            return IconButton(
-              icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
-              onPressed: () => context.read<ThemeCubit>().toggleTheme(), // Toggle theme using ThemeCubit
-            );
-          }),
+          BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              return IconButton(
+                icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+                onPressed: () => context.read<ThemeCubit>().toggleTheme(),
+              );
+            },
+          ),
         ],
         title: const Text("SMSE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         bottom: TabBar(
@@ -123,7 +127,7 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
-          _tabController.index = index; // Sync PageView with TabController
+          _tabController.index = index;
         },
         children: _pages,
       ),

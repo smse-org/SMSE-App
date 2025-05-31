@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,14 +9,18 @@ import 'package:pushable_button/pushable_button.dart';
 import 'package:random_avatar/random_avatar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:smse/constants.dart';
+import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/services/notification_settings_service.dart';
 import 'package:smse/features/profile/data/services/avatar_service.dart';
+import 'package:smse/features/profile/data/repositories/preferences_repository_impl.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/logoutCubit/logout_cubit.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/logoutCubit/logout_state.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_cubit.dart';
 import 'package:smse/features/profile/presentation/controller/cubit/profile_state.dart';
 import 'package:smse/features/profile/presentation/controller/notification_settings_cubit.dart';
+import 'package:smse/features/profile/presentation/widgets/model_preferences_section.dart';
+import 'package:smse/features/profile/presentation/controller/cubit/preferences_cubit.dart';
 
 class ProfileContentMobile extends StatefulWidget {
   const ProfileContentMobile({super.key});
@@ -176,6 +181,11 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
           create: (context) => NotificationSettingsCubit(NotificationSettingsService())
             ..loadSettings(),
         ),
+        BlocProvider(
+          create: (context) => PreferencesCubit(
+            PreferencesRepositoryImpl(ApiService(Dio())),
+          ),
+        ),
       ],
       child: SingleChildScrollView(
         child: Padding(
@@ -313,6 +323,11 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
                   GoRouter.of(context).push(AppRouter.contentPage);
                 },
               ),
+
+              const SizedBox(height: 24),
+
+              // Model Preferences Section
+              const ModelPreferencesSection(),
 
               const SizedBox(height: 24),
 

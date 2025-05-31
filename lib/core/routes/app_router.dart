@@ -21,7 +21,6 @@ abstract class AppRouter {
   static const String signUp = '/signup';
   static const String searchAnimation = '/search-animation';
   static const String contentPage = "/content";
-  static late final Function toggleTheme; // Declare toggleTheme as a late variable
 
   static final router = GoRouter(
     initialLocation: login, // Default route
@@ -46,9 +45,6 @@ abstract class AppRouter {
         navigatorKey: GlobalKey<NavigatorState>(), // For nested navigation
         builder: (context, state, child) {
           return ResponsiveHome(
-            toggleTheme: () {
-              toggleTheme(); // Call the toggleTheme function
-            },
             themeMode: ThemeMode.light,
             child: child, // Pass the routed child to the layout
           );
@@ -81,9 +77,5 @@ abstract class AppRouter {
       ),
     ],
   );
-
-  static void initialize(Function toggleThemeCallback) {
-    toggleTheme = toggleThemeCallback;
-  }
 }
 

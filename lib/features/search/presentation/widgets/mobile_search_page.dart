@@ -68,6 +68,7 @@ class MobileSearchView extends StatelessWidget {
             }));
           },
           child: Card(
+
             margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
               padding: const EdgeInsets.all(16.0),

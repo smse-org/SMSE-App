@@ -5,17 +5,27 @@ import 'package:fancy_bottom_navigation_plus/fancy_bottom_navigation_plus.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 
-class MobileLayout extends StatelessWidget {
+class MobileLayout extends StatefulWidget {
   final Widget child; // Render the current page
-  final VoidCallback toggleTheme;
   final ThemeMode themeMode;
 
   const MobileLayout({
     required this.child,
-    required this.toggleTheme,
     required this.themeMode,
     super.key,
   });
+
+  @override
+  State<MobileLayout> createState() => _MobileLayoutState();
+}
+
+class _MobileLayoutState extends State<MobileLayout> {
+  @override
+  void initState() {
+    super.initState();
+    // Load theme from preferences when the layout is initialized
+    context.read<ThemeCubit>().loadThemeFromPreferences();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +33,10 @@ class MobileLayout extends StatelessWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () => GoRouter.of(context).push(AppRouter.searchAnimation), // Example navigation
-        backgroundColor: themeMode == ThemeMode.light ? Colors.white : Colors.black,
+        onPressed: () => GoRouter.of(context).push(AppRouter.searchAnimation),
+        backgroundColor: widget.themeMode == ThemeMode.light ? Colors.white : Colors.black,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80)),
-        child: Icon(Icons.add, color: themeMode == ThemeMode.light ? Colors.black : Colors.white),
+        child: Icon(Icons.add, color: widget.themeMode == ThemeMode.light ? Colors.black : Colors.white),
       ),
       appBar: AppBar(
         title: const Text("SMSE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -35,19 +45,18 @@ class MobileLayout extends StatelessWidget {
             builder: (context, themeMode) {
               return IconButton(
                 icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
-                onPressed: () => context.read<ThemeCubit>().toggleTheme(), // Toggle theme using ThemeCubit
+                onPressed: () => context.read<ThemeCubit>().toggleTheme(),
               );
             },
           ),
         ],
       ),
-      body: child, // Render the current page
+      body: widget.child,
       bottomNavigationBar: FancyBottomNavigationPlus(
         initialSelection: currentIndex,
         shadowRadius: 10,
         circleColor: context.watch<ThemeCubit>().state == ThemeMode.light ? Colors.white : Colors.black,
         onTabChangedListener: (index) {
-          // Navigate to the selected tab
           switch (index) {
             case 0:
               context.go('/home');
@@ -75,7 +84,7 @@ class MobileLayout extends StatelessWidget {
   }
 
   int _getCurrentIndex(BuildContext context) {
-    final location = GoRouter.of(context).state!.uri.toString();  // Correct way to access the location
+    final location = GoRouter.of(context).state!.uri.toString();
     switch (location) {
       case '/home':
         return 0;

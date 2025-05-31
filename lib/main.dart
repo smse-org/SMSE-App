@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/bloc_observer.dart';
@@ -5,6 +6,8 @@ import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/utililes/cached_sp.dart';
 import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 import 'package:smse/core/services/notification_service.dart';
+import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/features/profile/data/repositories/preferences_repository_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ThemeCubit()..loadTheme(), // Load theme on app start
+      create: (_) => ThemeCubit(PreferencesRepositoryImpl(ApiService(Dio())))..loadThemeFromPreferences(),
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp.router(
