@@ -58,4 +58,40 @@ class PreferencesCubit extends Cubit<PreferencesState> {
       emit(PreferencesError(e.toString()));
     }
   }
+
+  Future<void> updateAudioModel(String model) async {
+    try {
+      final currentState = state;
+      if (currentState is PreferencesLoaded) {
+        final updatedPreferences = currentState.preferences.copyWith(audioModel: model);
+        await updatePreferences(updatedPreferences);
+      }
+    } catch (e) {
+      emit(PreferencesError(e.toString()));
+    }
+  }
+
+  Future<void> updateImageModel(String model) async {
+    try {
+      final currentState = state;
+      if (currentState is PreferencesLoaded) {
+        final updatedPreferences = currentState.preferences.copyWith(imageModel: model);
+        await updatePreferences(updatedPreferences);
+      }
+    } catch (e) {
+      emit(PreferencesError(e.toString()));
+    }
+  }
+
+  Future<void> updateTextModel(String model) async {
+    try {
+      final currentState = state;
+      if (currentState is PreferencesLoaded) {
+        final updatedPreferences = currentState.preferences.copyWith(textModel: model);
+        await updatePreferences(updatedPreferences);
+      }
+    } catch (e) {
+      emit(PreferencesError(e.toString()));
+    }
+  }
 } 

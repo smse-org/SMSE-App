@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/data/repositories/search_repo.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
@@ -7,11 +8,14 @@ class SearchCubit extends Cubit<SearchState> {
   final SearchRepository searchRepository;
   List<String> _selectedModalities = [];
   int? _limit;
+  List<SearchQuery> _recentQueries = [];
 
   SearchCubit(this.searchRepository) : super(SearchInitial());
 
   // Method to search with a query
   void search(String query) async {
+    if (query.trim().isEmpty) return;
+    
     emit(SearchLoading());
     final result = await searchRepository.searchFiles(
       query,
@@ -58,32 +62,29 @@ class SearchCubit extends Cubit<SearchState> {
     } else {
       _selectedModalities.add(modality);
     }
-    // Re-filter current results if we have any
-    if (state is SearchSucsess) {
-      final currentResults = (state as SearchSucsess).searchResults;
-      setSearchResults(currentResults);
-    }
+    // Emit a new state to trigger UI update
+    emit(ModalityChanged(List.from(_selectedModalities)));
   }
 
   // Method to clear modality selection
   void clearModalities() {
     _selectedModalities.clear();
-    // Re-filter current results if we have any
-    if (state is SearchSucsess) {
-      final currentResults = (state as SearchSucsess).searchResults;
-      setSearchResults(currentResults);
-    }
+    // Emit a new state to trigger UI update
+    emit(ModalityChanged([]));
   }
 
   // Method to get currently selected modalities
   List<String> get selectedModalities => _selectedModalities;
 
-  Future<void>searchQueries()async{
+  Future<void> searchQueries() async {
     emit(SearchLoading());
     final result = await searchRepository.queries();
     result.fold(
-      (failure)=> emit(SearchError(failure.errMessage)),
-      (queries)=> emit(QueriesSuccess(queries))
+      (failure) => emit(SearchError(failure.errMessage)),
+      (queries) {
+        _recentQueries = queries;
+        emit(QueriesSuccess(queries));
+      }
     );
   }
 
@@ -92,7 +93,12 @@ class SearchCubit extends Cubit<SearchState> {
     final result = await searchRepository.deleteQuery(id);
     result.fold(
       (failure) => emit(SearchError(failure.errMessage)),
-      (message) => emit(DeleteQuerySuccess(message)),
+      (message) {
+        _recentQueries.removeWhere((query) => query?.id == id);
+        emit(DeleteQuerySuccess(message));
+        // Re-emit queries state to update UI
+        emit(QueriesSuccess(_recentQueries));
+      },
     );
   }
 }

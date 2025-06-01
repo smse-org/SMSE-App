@@ -8,6 +8,7 @@ import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cub
 import 'package:smse/core/services/notification_service.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/profile/data/repositories/preferences_repository_impl.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,8 +30,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ThemeCubit(PreferencesRepositoryImpl(ApiService(Dio())))..loadThemeFromPreferences(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ThemeCubit>(
+          create: (context) => ThemeCubit(PreferencesRepositoryImpl(ApiService(Dio()))),
+        ),
+      ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp.router(
@@ -39,11 +44,35 @@ class MyApp extends StatelessWidget {
             title: 'SMSE APP',
             theme: ThemeData.light().copyWith(
               scaffoldBackgroundColor: Colors.white,
+              colorScheme: ColorScheme.light(
+                primary: Colors.blue,
+                secondary: Colors.blueAccent,
+                surface: Colors.white,
+                background: Colors.white,
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
             ),
             darkTheme: ThemeData.dark().copyWith(
-              scaffoldBackgroundColor: Colors.black, // Custom dark mode background
+              scaffoldBackgroundColor: Colors.black,
+              colorScheme: ColorScheme.dark(
+                primary: Colors.blue,
+                secondary: Colors.blueAccent,
+                surface: Colors.grey[900]!,
+                background: Colors.black,
+                onPrimary: Colors.white,
+                onSurface: Colors.white,
+              ),
+              appBarTheme: AppBarTheme(
+                backgroundColor: Colors.grey[900],
+                foregroundColor: Colors.white,
+              ),
             ),
-            themeMode: themeMode, // Apply user-selected theme mode
+            themeMode: themeMode,
           );
         },
       ),

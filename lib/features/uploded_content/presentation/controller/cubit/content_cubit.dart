@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/features/uploded_content/data/repositories/display_content_repo.dart';
-import 'content_state.dart';
+import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
 
 class ContentCubit extends Cubit<ContentState> {
   final DisplayContentRepo repository;
@@ -45,5 +45,14 @@ class ContentCubit extends Cubit<ContentState> {
           (_) => emit(const ContentTagged()),
     );
     fetchContents(); // Refresh contents after tagging
+  }
+
+  Future<void> uploadFiles(List<String> files) async {
+    emit(const ContentUploading());
+    final result = await repository.uploadFiles(files);
+    result.fold(
+      (failure) => emit(ContentError(failure.errMessage)),
+      (_) => emit(const ContentUploaded()),
+    );
   }
 }

@@ -1,7 +1,11 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:smse/core/services/notification_settings_service.dart';
 import 'dart:io' show Platform;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:uuid/uuid.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -14,65 +18,73 @@ class NotificationService {
   static const int uploadChannelId = 2;
 
   Future<void> initialize() async {
+    if (kIsWeb) return;
+
+    tz.initializeTimeZones();
+
     const androidSettings = AndroidInitializationSettings('@mipmap/appicon');
-    const iosSettings = DarwinInitializationSettings(
+    
+    final DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    
-    const initSettings = InitializationSettings(
+
+    final WindowsInitializationSettings windowsSettings = WindowsInitializationSettings(
+      appName: 'SMSE',
+      appUserModelId: 'com.smse.app',
+      guid: const Uuid().v4(),
+    );
+
+    final InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
+      macOS: iosSettings,
+      windows: windowsSettings,
     );
 
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Handle notification tap
-        debugPrint('Notification tapped: ${response.payload}');
-      },
-    );
+    await _notifications.initialize(initSettings);
 
-    // Create notification channels for Android
     if (Platform.isAndroid) {
       await _createNotificationChannels();
     }
   }
 
   Future<void> _createNotificationChannels() async {
-    const downloadChannel = AndroidNotificationChannel(
-      'download_channel',
+    const androidChannel = AndroidNotificationChannel(
+      'downloads',
       'Downloads',
       description: 'Notifications for file downloads',
       importance: Importance.high,
     );
 
-    const uploadChannel = AndroidNotificationChannel(
-      'upload_channel',
+    const androidChannel2 = AndroidNotificationChannel(
+      'uploads',
       'Uploads',
       description: 'Notifications for file uploads',
       importance: Importance.high,
     );
 
     await _notifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(downloadChannel);
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidChannel);
 
     await _notifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(uploadChannel);
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidChannel2);
   }
 
   Future<void> showDownloadProgress({
-    required String fileName,
+    required int id,
+    required String title,
     required int progress,
-    required int notificationId,
   }) async {
-    if (!await _settings.areNotificationsEnabled()) return;
+    if (kIsWeb) return;
 
     final androidDetails = AndroidNotificationDetails(
-      'download_channel',
+      'downloads',
       'Downloads',
       channelDescription: 'Notifications for file downloads',
       importance: Importance.low,
@@ -84,50 +96,61 @@ class NotificationService {
       autoCancel: false,
     );
 
-    final notificationDetails = NotificationDetails(android: androidDetails);
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      windows: const WindowsNotificationDetails(),
+    );
 
     await _notifications.show(
-      notificationId,
-      'Downloading $fileName',
-      'Progress: $progress%',
+      id,
+      title,
+      'Downloading... $progress%',
       notificationDetails,
     );
   }
 
   Future<void> showDownloadComplete({
-    required String fileName,
-    required int notificationId,
+    required int id,
+    required String title,
+    required String message,
   }) async {
-    if (!await _settings.areNotificationsEnabled()) return;
+    if (kIsWeb) return;
 
     final androidDetails = AndroidNotificationDetails(
-      'download_channel',
+      'downloads',
       'Downloads',
       channelDescription: 'Notifications for file downloads',
       importance: Importance.high,
       priority: Priority.high,
-      autoCancel: true,
     );
 
-    final notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notifications.show(
-      notificationId,
-      'Download Complete',
-      '$fileName has been downloaded successfully',
-      notificationDetails,
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      windows: const WindowsNotificationDetails(),
     );
+
+    await _notifications.show(id, title, message, notificationDetails);
   }
 
   Future<void> showUploadProgress({
-    required String fileName,
+    required int id,
+    required String title,
     required int progress,
-    required int notificationId,
   }) async {
-    if (!await _settings.areNotificationsEnabled()) return;
+    if (kIsWeb) return;
 
     final androidDetails = AndroidNotificationDetails(
-      'upload_channel',
+      'uploads',
       'Uploads',
       channelDescription: 'Notifications for file uploads',
       importance: Importance.low,
@@ -139,64 +162,77 @@ class NotificationService {
       autoCancel: false,
     );
 
-    final notificationDetails = NotificationDetails(android: androidDetails);
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      windows: const WindowsNotificationDetails(),
+    );
 
     await _notifications.show(
-      notificationId,
-      'Uploading $fileName',
-      'Progress: $progress%',
+      id,
+      title,
+      'Uploading... $progress%',
       notificationDetails,
     );
   }
 
   Future<void> showUploadComplete({
-    required String fileName,
-    required int notificationId,
+    required int id,
+    required String title,
+    required String message,
   }) async {
-    if (!await _settings.areNotificationsEnabled()) return;
+    if (kIsWeb) return;
 
     final androidDetails = AndroidNotificationDetails(
-      'upload_channel',
+      'uploads',
       'Uploads',
       channelDescription: 'Notifications for file uploads',
       importance: Importance.high,
       priority: Priority.high,
-      autoCancel: true,
     );
 
-    final notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notifications.show(
-      notificationId,
-      'Upload Complete',
-      '$fileName has been uploaded successfully',
-      notificationDetails,
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      windows: const WindowsNotificationDetails(),
     );
+
+    await _notifications.show(id, title, message, notificationDetails);
   }
 
   Future<void> showError({
+    required int id,
     required String title,
     required String message,
-    required int notificationId,
   }) async {
-    if (!await _settings.areNotificationsEnabled()) return;
+    if (kIsWeb) return;
 
     final androidDetails = AndroidNotificationDetails(
-      'download_channel',
+      'downloads',
       'Downloads',
       channelDescription: 'Notifications for file downloads',
       importance: Importance.high,
       priority: Priority.high,
-      autoCancel: true,
     );
 
-    final notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notifications.show(
-      notificationId,
-      title,
-      message,
-      notificationDetails,
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+      windows: const WindowsNotificationDetails(),
     );
+
+    await _notifications.show(id, title, message, notificationDetails);
   }
 } 

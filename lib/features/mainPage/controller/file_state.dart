@@ -10,7 +10,14 @@ abstract class FileUploadState extends Equatable {
 
 class FileUploadInitial extends FileUploadState {}
 
-class FileUploadInProgress extends FileUploadState {}
+class FileUploadInProgress extends FileUploadState {
+  final double? progress;
+
+  const FileUploadInProgress({this.progress});
+
+  @override
+  List<Object> get props => [progress ?? 0.0];
+}
 
 class FileUploadSuccess extends FileUploadState {
   final ContentModel response;

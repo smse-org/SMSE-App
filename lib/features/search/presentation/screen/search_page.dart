@@ -28,7 +28,12 @@ class SearchPage extends StatelessWidget {
         appBar: AppBar(
           leading: IconButton(onPressed: (){
             GoRouter.of(context).pushReplacement(AppRouter.home);
-          }, icon:const Icon( Icons.arrow_back)),
+          }, icon:IconButton(icon: const Icon( Icons.arrow_back) ,
+          onPressed: () {
+          Navigator.pop(context);
+          },
+
+          ) ),
           centerTitle: true,
           title: const Text(
             'Search Results',

@@ -6,26 +6,25 @@ import 'package:smse/constants.dart';
 import 'package:smse/features/favourite/presentation/screen/favourite_page.dart';
 import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 import 'package:smse/features/home/presentation/screen/homapage.dart';
+import 'package:smse/features/mainPage/controller/file_cubit.dart';
+import 'package:smse/features/mainPage/controller/file_state.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
 
 class WebLayout extends StatefulWidget {
-  final ThemeMode themeMode;
-
-  const WebLayout({super.key, required this.themeMode});
+  const WebLayout({super.key});
 
   @override
-  WebLayoutState createState() => WebLayoutState();
+  State<WebLayout> createState() => _WebLayoutState();
 }
 
-class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixin {
+class _WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late PageController _pageController;
-
   final List<Widget> _pages = [
     const HomePage(),
     const FavoritesPage(),
-    ProfilePage(),
+    const ProfilePage(),
   ];
 
   @override
@@ -33,104 +32,122 @@ class WebLayoutState extends State<WebLayout> with SingleTickerProviderStateMixi
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _pageController = PageController();
-
-    // Load theme from preferences when the layout is initialized
-    context.read<ThemeCubit>().loadThemeFromPreferences();
-
-    // Listen for tab controller changes to update PageView
+    
+    // Add listener to sync TabController with PageView
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         _pageController.animateToPage(
           _tabController.index,
           duration: const Duration(milliseconds: 300),
-          curve: Curves.ease,
+          curve: Curves.easeInOut,
         );
       }
     });
   }
 
-  Future<void> _searchAndUploadFiles() async {
-    // Open file picker
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'png'],
-    );
-    if (!context.mounted) return;
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
 
-    if (result != null) {
-      if (kIsWeb) {
-        // Web-specific handling: use bytes instead of paths
-        List<Uint8List> filesInBytes = result.files.map((file) => file.bytes!).toList();
-        // Show a dialog with a linear progress bar
-        if(context.mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return FileUploadDialog(files: filesInBytes);
-            },
-          );
-        }
-      } else {
-        // For non-web platforms, use paths
-        List<String> files = result.paths.whereType<String>().toList();
-        // Show a dialog with a linear progress bar
-        if(context.mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return FileUploadDialog(files: files);
-            },
-          );
-        }
+  Future<void> _searchAndUploadFiles() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'jpg', 'jpeg', 'wav'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        if (!mounted) return;
+
+        final fileUploadCubit = context.read<FileUploadCubit>();
+        showDialog(
+          context: context,
+          builder: (dialogContext) => BlocProvider.value(
+            value: fileUploadCubit,
+            child: FileUploadDialog(files: result.files),
+          ),
+        );
       }
-    } else {
-      // User canceled the picker
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No files selected.")),
+        SnackBar(content: Text('Error picking files: $e')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _searchAndUploadFiles,
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
-      ),
-      appBar: AppBar(
-        leading: Image.asset(Constant.logoImage),
-        actions: [
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, themeMode) {
-              return IconButton(
-                icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
-                onPressed: () => context.read<ThemeCubit>().toggleTheme(),
-              );
-            },
+    return BlocBuilder<ThemeCubit, ThemeMode>(
+      builder: (context, themeMode) {
+        final isDark = themeMode == ThemeMode.dark;
+        return Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: _searchAndUploadFiles,
+            backgroundColor: isDark ? Colors.black : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80)),
+            child: Icon(Icons.add, color: isDark ? Colors.white : Colors.black),
           ),
-        ],
-        title: const Text("SMSE", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.home), text: "Home"),
-            Tab(icon: Icon(Icons.favorite), text: "Favorites"),
-            Tab(icon: Icon(Icons.person), text: "Profile"),
-          ],
-        ),
-      ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          _tabController.index = index;
-        },
-        children: _pages,
-      ),
+          appBar: AppBar(
+            leading: Image.asset(Constant.logoImage),
+            title: Text(
+              "SMSE",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  isDark ? Icons.light_mode : Icons.dark_mode,
+                  color: isDark ? Colors.white : Colors.white,
+                ),
+                onPressed: () => context.read<ThemeCubit>().toggleTheme(),
+              ),
+            ],
+            bottom: TabBar(
+              labelColor: isDark ? Colors.white : Colors.white,
+
+              indicatorColor: isDark ? Colors.white : Colors.white,
+              controller: _tabController,
+              onTap: (index) {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              tabs: [
+                Tab(
+                  icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.white),
+                  text: "Home",
+                ),
+                Tab(
+                  icon: Icon(Icons.favorite, color: isDark ? Colors.white : Colors.white),
+                  text: "Favorites",
+                ),
+                Tab(
+                  icon: Icon(Icons.person, color: isDark ? Colors.white : Colors.white),
+                  text: "Profile",
+                ),
+              ],
+            ),
+          ),
+          body: PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              _tabController.animateTo(index);
+            },
+            children: _pages,
+          ),
+        );
+      },
     );
   }
 }
@@ -145,8 +162,6 @@ class FileUploadDialog extends StatefulWidget {
 }
 
 class FileUploadDialogState extends State<FileUploadDialog> {
-  double progress = 0;
-
   @override
   void initState() {
     super.initState();
@@ -154,59 +169,91 @@ class FileUploadDialogState extends State<FileUploadDialog> {
   }
 
   Future<void> _startUploading() async {
-    for (int i = 0; i < widget.files.length; i++) {
-      await Future.delayed(const Duration(seconds: 1)); // Simulate upload delay
-      if (mounted) {
-        setState(() {
-          progress = ((i + 1) / widget.files.length) * 100;
-        });
-      }
+    if (kIsWeb) {
+      // For web, we need to convert Uint8List to files first
+      // This is a placeholder - you'll need to implement the actual web file handling
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Web file upload not implemented yet")),
+      );
+      Navigator.pop(context);
+      return;
     }
 
-    if (mounted) {
-      // Close the dialog when upload is complete
-      Navigator.pop(context);
-      // Show a completion message
+    // For desktop/mobile platforms
+    final filePaths = widget.files.whereType<String>().toList();
+    if (filePaths.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("All files uploaded successfully!")),
+        const SnackBar(content: Text("No valid files selected")),
       );
+      Navigator.pop(context);
+      return;
     }
+
+    // Get the FileUploadCubit from the context
+    final fileUploadCubit = context.read<FileUploadCubit>();
+    
+    // Start the upload
+    await fileUploadCubit.uploadFiles(filePaths);
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Uploading Files"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Uploading... ${progress.toStringAsFixed(0)}%",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          LinearProgressIndicator(
-            value: progress / 100,
-            minHeight: 10,
-            backgroundColor: Colors.grey[300],
-            color: Colors.blue,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "File ${((progress / 100) * widget.files.length).ceil()} of ${widget.files.length}",
-            style: const TextStyle(fontSize: 16),
-          ),
-        ],
+    return BlocListener<FileUploadCubit, FileUploadState>(
+      listener: (context, state) {
+        if (state is FileUploadSuccess) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Files uploaded successfully!")),
+          );
+        } else if (state is FileUploadFailure) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Upload failed: ${state.error}")),
+          );
+        }
+      },
+      child: BlocBuilder<FileUploadCubit, FileUploadState>(
+        builder: (context, state) {
+          double progress = 0.0;
+          if (state is FileUploadInProgress) {
+            progress = (state.progress! * 100).toDouble();
+          }
+
+          return AlertDialog(
+            title: const Text("Uploading Files"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Uploading... ${progress.toStringAsFixed(0)}%",
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                LinearProgressIndicator(
+                  value: progress / 100,
+                  minHeight: 10,
+                  backgroundColor: Colors.grey[300],
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "File ${((progress / 100) * widget.files.length).ceil()} of ${widget.files.length}",
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+            actions: [
+              if (state is! FileUploadSuccess)
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                ),
+            ],
+          );
+        },
       ),
-      actions: [
-        if (progress < 100)
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-      ],
     );
   }
 }

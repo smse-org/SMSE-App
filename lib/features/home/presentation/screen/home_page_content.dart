@@ -7,6 +7,7 @@ import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
+import 'package:smse/features/search/presentation/screen/search_page.dart';
 
 import '../widgets/mobile_home.dart';
 import '../widgets/web_home.dart';
@@ -27,19 +28,28 @@ class HomePageContent extends StatelessWidget {
               content: Text(state.message),
             ),
           );
-        }else if (state is SearchSucsess) {
-         GoRouter.of(context).go(AppRouter.search,extra :state.searchResults);
+        } else if (state is SearchSucsess) {
+          // Use pushNamed instead of go for web compatibility
+              Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                SearchPage(searchResults: state.searchResults)));
         }
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 600) {
-            // Display mobile UI if the screen width is less than 600
-            return const SafeArea(child: MobileHomePage());
-          } else {
-            // Display web UI if the screen width is 600 or more
-            return const WebHomePage();
-          }
+      child: BlocBuilder<SearchCubit, SearchState>(
+        buildWhen: (previous, current) => 
+          current is QueriesSuccess || 
+          current is SearchInitial,
+        builder: (context, state) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 600) {
+                // Display mobile UI if the screen width is less than 600
+                return const SafeArea(child: MobileHomePage());
+              } else {
+                // Display web UI if the screen width is 600 or more
+                return const WebHomePage();
+              }
+            },
+          );
         },
       ),
     );
@@ -71,27 +81,29 @@ class ModalitySelector extends StatelessWidget {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _ModalityChip(
-                label: 'Text',
-                value: 'text',
-                icon: Icons.text_fields_rounded,
-              ),
-              _ModalityChip(
-                label: 'Image',
-                value: 'image',
-                icon: Icons.image_rounded,
-              ),
-              _ModalityChip(
-                label: 'Audio',
-                value: 'audio',
-                icon: Icons.audio_file_rounded,
-              ),
-            ],
+          child: Center(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _ModalityChip(
+                  label: 'Text',
+                  value: 'text',
+                  icon: Icons.text_fields_rounded,
+                ),
+                _ModalityChip(
+                  label: 'Image',
+                  value: 'image',
+                  icon: Icons.image_rounded,
+                ),
+                _ModalityChip(
+                  label: 'Audio',
+                  value: 'audio',
+                  icon: Icons.audio_file_rounded,
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -113,6 +125,9 @@ class _ModalityChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SearchCubit, SearchState>(
+      buildWhen: (previous, current) => 
+        current is ModalityChanged || 
+        current is SearchInitial,
       builder: (context, state) {
         final isSelected = context.read<SearchCubit>().selectedModalities.contains(value);
         final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -121,23 +136,19 @@ class _ModalityChip extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
-          builder: (context, value, child) {
+          builder: (context, animationValue, child) {
             return Transform.scale(
-              scale: 0.95 + (value * 0.05),
+              scale: 0.95 + (animationValue * 0.05),
               child: FilterChip(
                 label: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        icon,
-                        key: ValueKey(isSelected),
-                        size: 18,
-                        color: isSelected 
-                          ? (isDark ? Colors.white : Colors.white)
-                          : (isDark ? Colors.white70 : Colors.black87),
-                      ),
+                    Icon(
+                      icon,
+                      size: 18,
+                      color: isSelected 
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black87),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -146,25 +157,33 @@ class _ModalityChip extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         color: isSelected 
-                          ? (isDark ? Colors.white : Colors.white)
+                          ? Colors.white
                           : (isDark ? Colors.white70 : Colors.black87),
                       ),
                     ),
+                    if (isSelected) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ],
                   ],
                 ),
                 selected: isSelected,
                 onSelected: (selected) {
-                  context.read<SearchCubit>().toggleModality(value as String);
+                  context.read<SearchCubit>().toggleModality(value);
                 },
                 backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                selectedColor: Theme.of(context).primaryColor,
-                checkmarkColor: isDark ? Colors.white : Colors.white,
+                selectedColor: Theme.of(context).colorScheme.primary,
+                checkmarkColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
                     color: isSelected 
-                      ? Theme.of(context).primaryColor
+                      ? Theme.of(context).colorScheme.primary
                       : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
                     width: 1,
                   ),

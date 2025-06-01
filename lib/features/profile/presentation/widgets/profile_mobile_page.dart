@@ -1,7 +1,6 @@
 import 'dart:io' as io;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -39,13 +38,10 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb) {
-      _loadAvatar();
-    }
+    _loadAvatar();
   }
 
   Future<void> _loadAvatar() async {
-    if (kIsWeb) return;
     try {
       final path = await _avatarService.getAvatarPath();
       if (path != null) {
@@ -60,7 +56,6 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
   }
 
   Future<void> _pickImage() async {
-    if (kIsWeb) return;
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
@@ -71,7 +66,8 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
       );
       
       if (image != null) {
-        final savedPath = await _avatarService.saveAvatarToLocal(io.File(image.path));
+        final pickedFile = io.File(image.path);
+        final savedPath = await _avatarService.saveAvatarToLocal(pickedFile);
         setState(() {
           _avatarPath = savedPath;
           _isSvg = false;
@@ -101,7 +97,6 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
   }
 
   void _showAvatarOptions() {
-    if (kIsWeb) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -134,7 +129,6 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
                 // Random avatars
                 ..._randomAvatars.map((avatarId) => GestureDetector(
                   onTap: () async {
-                    if (kIsWeb) return;
                     try {
                       Navigator.pop(context);
                       final svgString = RandomAvatarString(avatarId);
@@ -202,87 +196,71 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
               // Account Information
               Row(
                 children: [
-                  if (!kIsWeb)
-                    GestureDetector(
-                      onTap: _showAvatarOptions,
-                      child: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.grey[300],
-                            child: _avatarPath != null
-                                ? _isSvg
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(40),
-                                        child: SvgPicture.file(
-                                          io.File(_avatarPath!),
-                                          width: 80,
-                                          height: 80,
-                                          fit: BoxFit.cover,
-                                          placeholderBuilder: (context) => const CircularProgressIndicator(),
-                                        ),
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: BorderRadius.circular(40),
-                                        child: Image.file(
-                                          io.File(_avatarPath!),
-                                          width: 80,
-                                          height: 80,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return const Icon(Icons.error_outline, size: 40);
-                                          },
-                                        ),
-                                      )
-                                : Image.asset(
-                                    Constant.profileImage,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(Icons.error_outline, size: 40);
-                                    },
-                                  ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 20,
-                              ),
+                  GestureDetector(
+                    onTap: _showAvatarOptions,
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.grey[300],
+                          child: _avatarPath != null
+                              ? _isSvg
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(40),
+                                      child: SvgPicture.string(
+                                        io.File(_avatarPath!).readAsStringSync(),
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                        placeholderBuilder: (context) => const CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(40),
+                                      child: Image.file(
+                                        io.File(_avatarPath!),
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(Icons.error_outline, size: 40);
+                                        },
+                                      ),
+                                    )
+                              : Image.asset(
+                                  Constant.profileImage,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.error_outline, size: 40);
+                                  },
+                                ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
                             ),
                           ),
-                        ],
-                      ),
-                    )
-                  else
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.grey[300],
-                      child: Image.asset(
-                        Constant.profileImage,
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.error_outline, size: 40);
-                        },
-                      ),
+                        ),
+                      ],
                     ),
+                  ),
                   const SizedBox(width: 16),
                   BlocConsumer<ProfileCubit, ProfileState>(
                     listener: (context, state) {
                       if (state is ProfileErrorState) {
-                        // Handle error state if needed, e.g., show a SnackBar
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Error: ${state.message}')),
                         );
@@ -290,7 +268,6 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
                     },
                     builder: (context, state) {
                       if (state is ProfileLoadingState) {
-                        // Use Skeletonizer to display a skeleton loader
                         return const Skeletonizer(
                           enabled: true,
                           child: UserDataCard(username: "", email: ""),
@@ -369,29 +346,14 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
               ),
               const SizedBox(height: 24),
 
-              // Feedback & Support
-              // const Text(
-              //   "Feedback & Support",
-              //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              // ),
-              const SizedBox(height: 16),
-              // ElevatedButton(
-              //   onPressed: () {},
-              //   style: ElevatedButton.styleFrom(
-              //     backgroundColor: Colors.grey[300],
-              //     foregroundColor: Colors.black,
-              //   ),
-              //   child: const Center(
-              //     child: Text("Send Feedback"),
-              //   ),
-              // ),
-              BlocListener<LogoutCubit,LogoutState>(
-                listener: ( context, state) {
-                  if(state is LogoutFailure){
+              // Logout Button
+              BlocListener<LogoutCubit, LogoutState>(
+                listener: (context, state) {
+                  if (state is LogoutFailure) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Error: ${state.message}')),
                     );
-                  }else if(state is LogoutSuccess){
+                  } else if (state is LogoutSuccess) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Logout Successfully')),
                     );
@@ -403,13 +365,17 @@ class _ProfileContentMobileState extends State<ProfileContentMobile> {
                   height: 50,
                   child: const Text(
                     'Logout',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   onPressed: () {
                     BlocProvider.of<LogoutCubit>(context).logout();
                   },
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -437,7 +403,10 @@ class UserDataCard extends StatelessWidget {
         ),
         Text(
           email,
-          style: TextStyle(color: Colors.grey[600]),
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
         ),
       ],
     );

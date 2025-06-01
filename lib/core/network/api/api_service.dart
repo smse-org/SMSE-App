@@ -9,6 +9,8 @@ class ApiService {
 
   ApiService(this._dio);
 
+
+
   // GET request
   Future<dynamic> get({required String endpoint}) async {
     try {
@@ -63,37 +65,34 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> postContent({
+  Future<dynamic> postContent({
     required String endpoint,
     required dynamic data,
-    bool? token = false,
-    ResponseType? responseType,
-    Function(int sent, int total)? onSendProgress,
+    bool token = false,
   }) async {
     try {
+      print('API Service: Making POST request to $_baseUrl$endpoint');
+      print('API Service: Request data: $data');
+      
       final response = await _dio.post(
         "$_baseUrl$endpoint",
         data: data,
         options: Options(
           headers: {
             'Content-Type': 'multipart/form-data',
-            if (token == true)
-              'Authorization': 'Bearer ${await CachedData.getData(Constant.accessToekn)}',
+            if (token) 'Authorization': 'Bearer ${await CachedData.getData(Constant.accessToekn)}',
           },
-          responseType: responseType ?? ResponseType.json,
         ),
-        onSendProgress: onSendProgress,
       );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return response.data;
-      } else {
-        throw ServerFailuer.fromResponse(response.statusCode, response.data);
-      }
-    } on DioException catch (dioError) {
-      throw ServerFailuer.fromDioError(dioError);
-    } catch (e) {
-      throw ServerFailuer("Unexpected error: ${e.toString()}");
+      
+      print('API Service: Response status: ${response.statusCode}');
+      print('API Service: Response data: ${response.data}');
+      
+      return response.data;
+    } on DioException catch (e) {
+      print('API Service: Dio error: ${e.message}');
+      print('API Service: Error response: ${e.response?.data}');
+      throw ServerFailuer.fromDioError(e);
     }
   }
 

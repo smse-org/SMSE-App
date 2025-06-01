@@ -1,8 +1,8 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/mainPage/model/content.dart';
 import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
@@ -10,31 +10,83 @@ import 'package:smse/features/previewPage/presentation/widgets/preview_page_web.
 import 'package:smse/features/uploded_content/data/repositories/display_content_repo_imp.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
-import 'package:smse/features/uploded_content/presentation/screen/display_content_page.dart';
 
-class ContentPage extends StatelessWidget {
+class ContentPage extends StatefulWidget {
   const ContentPage({super.key});
 
   @override
+  State<ContentPage> createState() => _ContentPageState();
+}
+
+class _ContentPageState extends State<ContentPage> {
+  late final ContentCubit _contentCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _contentCubit = ContentCubit(DisplayContentRepoImp(ApiService(Dio())));
+    _contentCubit.fetchContents();
+  }
+
+  @override
+  void dispose() {
+    _contentCubit.close();
+    super.dispose();
+  }
+
+  Future<void> _pickAndUploadFiles() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'jpg', 'wav', 'jpeg'],
+      );
+
+      if (result != null) {
+        List<String> filePaths = result.paths.whereType<String>().toList();
+        if (filePaths.isNotEmpty) {
+          await _contentCubit.uploadFiles(filePaths);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking files: $e')),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ContentCubit(DisplayContentRepoImp(ApiService(Dio()))),
+    return BlocProvider.value(
+      value: _contentCubit,
       child: BlocListener<ContentCubit, ContentState>(
         listener: (context, state) {
           if (state is ContentError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Error: ${state.message}')),
             );
+          } else if (state is ContentUploaded) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Files uploaded successfully')),
+            );
+            _contentCubit.fetchContents();
           }
         },
         child: LayoutBuilder(
           builder: (context, constraints) {
-            BlocProvider.of<ContentCubit>(context).fetchContents();
             if (constraints.maxWidth > 600) {
               return Scaffold(
                 appBar: AppBar(
                   centerTitle: true,
                   title: const Text('Contents'),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: _pickAndUploadFiles,
+                    ),
+                  ],
                 ),
                 body: const ContentWebPage(),
               );
@@ -43,6 +95,12 @@ class ContentPage extends StatelessWidget {
                 appBar: AppBar(
                   centerTitle: true,
                   title: const Text('Contents'),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: _pickAndUploadFiles,
+                    ),
+                  ],
                 ),
                 body: const ContentMobilePage(),
               );

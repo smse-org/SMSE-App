@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/components/content_card.dart';
 import 'package:smse/core/components/shimmer_loading.dart';
+import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
+import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
 
 class WebSearchView extends StatelessWidget {
   const WebSearchView({super.key, required this.number});
@@ -14,45 +16,46 @@ class WebSearchView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SearchCubit, SearchState>(
       builder: (context, state) {
-        return Column(
-          children: [
-            const SizedBox(height: 20),
-            Expanded(
-              child: _buildContent(state),
-            ),
-          ],
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              if (state is SearchLoading)
+                _buildShimmerLoading()
+              else if (state is SearchSucsess)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Text(
+                        key: ValueKey(state.searchResults.length),
+                        'Found ${state.searchResults.length} results',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildContentGrid(state.searchResults),
+                  ],
+                )
+              else if (state is SearchError)
+                Center(child: Text(state.message))
+              else
+                const Center(child: Text('Start searching...')),
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildContent(SearchState state) {
-    if (state is SearchLoading) {
-      return _buildShimmerGrid();
-    } else if (state is SearchSucsess) {
-      return _buildResultsGrid(state.searchResults);
-    } else if (state is SearchError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(state.message),
-          ],
-        ),
-      );
-    } else {
-      return const Center(
-        child: Text('Start searching...'),
-      );
-    }
-  }
-
-  Widget _buildShimmerGrid() {
+  Widget _buildShimmerLoading() {
     return GridView.builder(
       shrinkWrap: true,
-      padding: const EdgeInsets.all(16.0),
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(8.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: number,
         crossAxisSpacing: 10,
@@ -67,18 +70,18 @@ class WebSearchView extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const ShimmerText(width: 150, height: 24),
-                  const SizedBox(height: 8),
+                children: const [
+                  ShimmerText(width: 200, height: 24),
+                  SizedBox(height: 8),
                   Row(
                     children: [
-                      const ShimmerCircle(size: 16),
-                      const SizedBox(width: 4),
-                      const ShimmerText(width: 60, height: 14),
-                      const SizedBox(width: 16),
-                      const ShimmerCircle(size: 16),
-                      const SizedBox(width: 4),
-                      const ShimmerText(width: 80, height: 14),
+                      ShimmerCircle(size: 16),
+                      SizedBox(width: 4),
+                      ShimmerText(width: 60, height: 14),
+                      SizedBox(width: 16),
+                      ShimmerCircle(size: 16),
+                      SizedBox(width: 4),
+                      ShimmerText(width: 80, height: 14),
                     ],
                   ),
                 ],
@@ -90,7 +93,7 @@ class WebSearchView extends StatelessWidget {
     );
   }
 
-  Widget _buildResultsGrid(List<SearchResult> results) {
+  Widget _buildContentGrid(List<SearchResult> results) {
     if (results.isEmpty) {
       return const Center(
         child: Column(
@@ -109,7 +112,8 @@ class WebSearchView extends StatelessWidget {
       child: GridView.builder(
         key: ValueKey(results.length),
         shrinkWrap: true,
-        padding: const EdgeInsets.all(16.0),
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(8.0),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: number,
           crossAxisSpacing: 10,
@@ -146,9 +150,63 @@ class WebSearchView extends StatelessWidget {
                     )..forward(),
                     curve: Curves.easeOut,
                   )),
-                  child: ContentCardWeb(
-                    title: 'Content ID: ${result.contentId}',
-                    relevanceScore: (result.similarityScore * 100).round(),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return FileViewerPage(
+                          contentModel: result.toContentModel(),
+                        );
+                      }));
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              result.fileName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  result.contentTag ? Icons.tag : Icons.description,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  result.contentTag ? 'Tagged' : 'Untagged',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Icon(
+                                  Icons.score,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Score: ${(result.similarityScore * 100).toStringAsFixed(2)}%',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               );

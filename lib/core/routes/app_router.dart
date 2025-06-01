@@ -9,7 +9,7 @@ import 'package:smse/features/mainPage/widget/search_animation_page.dart';
 import 'package:smse/features/profile/presentation/screen/profile_page.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
-import 'package:smse/features/splash/splash_view.dart';
+import 'package:smse/features/splash/splash_screen.dart';
 import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
 
 abstract class AppRouter {
@@ -27,7 +27,7 @@ abstract class AppRouter {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const SplashView(),
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: login,
@@ -45,7 +45,6 @@ abstract class AppRouter {
         navigatorKey: GlobalKey<NavigatorState>(), // For nested navigation
         builder: (context, state, child) {
           return ResponsiveHome(
-            themeMode: ThemeMode.light,
             child: child, // Pass the routed child to the layout
           );
         },
@@ -78,4 +77,3 @@ abstract class AppRouter {
     ],
   );
 }
-

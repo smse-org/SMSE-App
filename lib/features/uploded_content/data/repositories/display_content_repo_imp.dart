@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:smse/core/error/failuers.dart';
@@ -27,7 +28,7 @@ class DisplayContentRepoImp extends DisplayContentRepo {
     } on DioException catch (dioError) {
       return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
-      return Left(ServerFailuer("Unexpected error: \${e.toString()}"));
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
   }
 
@@ -58,9 +59,9 @@ class DisplayContentRepoImp extends DisplayContentRepo {
             int progress = (received / total * 100).round();
             // Show download progress notification
             _notificationService.showDownloadProgress(
-              fileName: fileName.split('/').last,
               progress: progress,
-              notificationId: notificationId,
+              id: notificationId,
+              title: fileName.split('/').last,
             );
           }
         },
@@ -68,8 +69,9 @@ class DisplayContentRepoImp extends DisplayContentRepo {
 
       // Show download complete notification
       await _notificationService.showDownloadComplete(
-        fileName: fileName.split('/').last,
-        notificationId: notificationId,
+        id: notificationId,
+        title: fileName.split('/').last,
+        message: 'Download completed successfully!',
       );
 
       OpenFilex.open(savePath); // Open file after successful download
@@ -79,7 +81,7 @@ class DisplayContentRepoImp extends DisplayContentRepo {
       await _notificationService.showError(
         title: 'Download Failed',
         message: failure.errMessage,
-        notificationId: _notificationId++,
+        id: _notificationId++,
       );
       return Left(failure);
     } on DioException catch (dioError) {
@@ -87,7 +89,7 @@ class DisplayContentRepoImp extends DisplayContentRepo {
       await _notificationService.showError(
         title: 'Download Failed',
         message: dioError.message ?? 'Network error occurred',
-        notificationId: _notificationId++,
+        id: _notificationId++,
       );
       return Left(ServerFailuer.fromDioError(dioError));
     } catch (e) {
@@ -95,7 +97,7 @@ class DisplayContentRepoImp extends DisplayContentRepo {
       await _notificationService.showError(
         title: 'Download Failed',
         message: e.toString(),
-        notificationId: _notificationId++,
+        id: _notificationId++,
       );
       return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
     }
@@ -127,6 +129,45 @@ class DisplayContentRepoImp extends DisplayContentRepo {
         endpoint: 'contents/$id',
         data: {'content_tag': isTagged},
       );
+      return const Right(null);
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
+    } catch (e) {
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
+    }
+  }
+
+  @override
+  Future<Either<Faliuer, void>> uploadFiles(List<String> files) async {
+    try {
+      for (var filepath in files) {
+        final fileName = filepath.split('/').last;
+        final file = File(filepath);
+        final fileType = fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.jpeg')
+            ? 'image/jpeg'
+            : fileName.toLowerCase().endsWith('.txt')
+                ? 'text/plain'
+                : fileName.toLowerCase().endsWith('.wav')
+                    ? 'audio/wav'
+                    : 'application/octet-stream';
+
+        final formatData = FormData.fromMap({
+          'file': await MultipartFile.fromFile(
+            filepath,
+            filename: fileName,
+            contentType: MediaType.parse(fileType),
+          ),
+        });
+
+        await apiService.postContent(
+          endpoint: "contents",
+          data: formatData,
+          token: true,
+        );
+      }
+
       return const Right(null);
     } on ServerFailuer catch (failure) {
       return Left(failure);

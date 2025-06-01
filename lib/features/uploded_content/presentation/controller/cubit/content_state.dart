@@ -74,3 +74,12 @@ class ContentTagging extends ContentState {
 class ContentTagged extends ContentState {
   const ContentTagged();
 }
+
+// Content Upload States
+class ContentUploading extends ContentState {
+  const ContentUploading();
+}
+
+class ContentUploaded extends ContentState {
+  const ContentUploaded();
+}
