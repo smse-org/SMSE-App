@@ -7,10 +7,13 @@ import 'package:smse/features/uploded_content/presentation/controller/cubit/cont
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import 'dart:typed_data'; // Import for Uint8List
 
 class FilePreviewWeb extends StatefulWidget {
-  const FilePreviewWeb({super.key, required this.contentModel});
+  const FilePreviewWeb({super.key, required this.contentModel, this.thumbnailBytes, this.isLoadingThumbnail = true});
   final ContentModel contentModel;
+  final Uint8List? thumbnailBytes;
+  final bool isLoadingThumbnail;
 
   @override
   State<FilePreviewWeb> createState() => _FilePreviewWebState();
@@ -90,6 +93,8 @@ class _FilePreviewWebState extends State<FilePreviewWeb> {
                     contentModel: widget.contentModel,
                     width: 600,
                     height: 400,
+                    image: widget.thumbnailBytes,
+                    isLoading: widget.isLoadingThumbnail,
                   ),
                   const SizedBox(height: 20),
                   Container(

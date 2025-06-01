@@ -6,7 +6,10 @@ import 'package:smse/features/previewPage/presentation/screen/preview_page.dart'
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
+import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
 import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class WebSearchView extends StatelessWidget {
   const WebSearchView({super.key, required this.number});
@@ -123,6 +126,7 @@ class WebSearchView extends StatelessWidget {
         itemCount: results.length,
         itemBuilder: (context, index) {
           final result = results[index];
+          final content = result.toContentModel();
           return AnimatedBuilder(
             animation: Listenable.merge([
               AnimationController(
@@ -150,61 +154,94 @@ class WebSearchView extends StatelessWidget {
                     )..forward(),
                     curve: Curves.easeOut,
                   )),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return FileViewerPage(
-                          contentModel: result.toContentModel(),
-                        );
-                      }));
-                    },
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              result.fileName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
+                  child: Card(
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) {
+                          return FileViewerPage(
+                            contentModel: content,
+                          );
+                        }));
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FutureBuilder<String>(
+                            future: context.read<ContentCubit>().getThumbnail(content.id!),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: ShimmerLoading(child: ShimmerCard(width: double.infinity, height: double.infinity)),
+                                );
+                              }
+                              if (snapshot.hasData && snapshot.data != null) {
+                                try {
+                                  final Uint8List bytes = base64Decode(snapshot.data!.split(',').last);
+                                  return AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: Image.memory(
+                                      bytes,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Center(child: Icon(Icons.image_not_supported, size: 64));
+                                      },
+                                    ),
+                                  );
+                                } catch (e) {
+                                  print('Error decoding base64: $e');
+                                  return const AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: Center(child: Icon(Icons.error, size: 64)),
+                                  );
+                                }
+                              }
+                              return const AspectRatio(
+                                aspectRatio: 16 / 9,
+                                child: Center(child: Icon(Icons.image_not_supported, size: 64)),
+                              );
+                            },
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  result.contentTag ? Icons.tag : Icons.description,
-                                  size: 16,
-                                  color: Colors.grey,
+                                Row(
+                                  children: [
+                                    Icon(
+                                      content.contentTag ? Icons.favorite : Icons.favorite_border,
+                                      size: 20,
+                                      color: content.contentTag ? Colors.red : Colors.grey,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        content.contentPath.split('/').last,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(height: 8),
                                 Text(
-                                  result.contentTag ? 'Tagged' : 'Untagged',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
+                                  'Size: ${content.contentSize} bytes',
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                const SizedBox(width: 16),
-                                Icon(
-                                  Icons.score,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 4),
+                                const SizedBox(height: 4),
                                 Text(
-                                  'Score: ${(result.similarityScore * 100).toStringAsFixed(2)}%',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
+                                  'Upload Date: ${content.uploadDate.toString().split('.')[0]}',
+                                  style: const TextStyle(fontSize: 14),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

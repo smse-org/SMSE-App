@@ -83,3 +83,20 @@ class ContentUploading extends ContentState {
 class ContentUploaded extends ContentState {
   const ContentUploaded();
 }
+
+class ContentThumbnailLoaded extends ContentState {
+  final String thumbnailPath;
+
+  const ContentThumbnailLoaded(this.thumbnailPath);
+
+  @override
+  List<Object?> get props => [thumbnailPath];
+}
+class ContentThumbnailError extends ContentState {
+  final String message;
+
+  const ContentThumbnailError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

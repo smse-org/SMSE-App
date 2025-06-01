@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/components/shimmer_loading.dart';
 import 'package:smse/features/mainPage/model/content.dart';
 import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
+import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
+import 'dart:convert'; // Import for base64Decode
+import 'dart:typed_data'; // Import for Uint8List
 
 class FavoritesWeb extends StatelessWidget {
   const FavoritesWeb({super.key, required this.taggedContents});
@@ -10,6 +14,7 @@ class FavoritesWeb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Uint8List bytes;
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 800),
@@ -30,7 +35,7 @@ class FavoritesWeb extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FileViewerPage(contentModel: content),
+                      builder: (context) => FileViewerPage(contentModel: content ),
                     ),
                   );
                 },
@@ -41,6 +46,37 @@ class FavoritesWeb extends StatelessWidget {
                     children: [
                       Row(
                         children: [
+                          FutureBuilder<String>(
+                            future: context.read<ContentCubit>().getThumbnail(content.id!),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const ShimmerCircle(size: 40);
+                              }
+                              if (snapshot.hasData && snapshot.data != null) {
+                                try {
+                                  // Decode the base64 string to bytes
+                                  bytes = base64Decode(snapshot.data!.split(',').last);
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.memory(
+                                      bytes,
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Icon(Icons.image_not_supported, size: 40);
+                                      },
+                                    ),
+                                  );
+                                } catch (e) {
+                                  print('Error decoding base64: $e');
+                                  return const Icon(Icons.error, size: 40);
+                                }
+                              }
+                              return const Icon(Icons.image_not_supported, size: 40);
+                            },
+                          ),
+                          const SizedBox(width: 8),
                           const Icon(Icons.favorite, color: Colors.red),
                           const SizedBox(width: 8),
                           Expanded(

@@ -12,17 +12,25 @@ class ApiService {
 
 
   // GET request
-  Future<dynamic> get({required String endpoint}) async {
+  Future<dynamic> get({
+    required String endpoint,
+    ResponseType? responseType,
+  }) async {
     try {
       final token = await CachedData.getData(Constant.accessToekn);
       final response = await _dio.get(
         "$_baseUrl$endpoint",
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
+          responseType: responseType ?? ResponseType.json,
         ),
       );
 
-      return _handleResponse(response);
+      if (response.requestOptions.responseType == ResponseType.bytes) {
+        return response.data;
+      } else {
+        return _handleResponse(response);
+      }
     } on DioException catch (e) {
       throw _handleDioError(e);
     } catch (e) {

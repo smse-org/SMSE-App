@@ -59,7 +59,8 @@ class SearchResult {
       contentPath: fileName,
       contentTag: contentTag,
       contentSize: 0, // Since we don't have this info in search results
-      uploadDate: DateTime.now(), // Since we don't have this info in search results
+      uploadDate: DateTime.now(),
+      thumbnailPath: ""// Since we don't have this info in search results
     );
   }
 }

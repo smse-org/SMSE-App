@@ -11,10 +11,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/features/previewPage/presentation/widgets/file_preview_widget.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_state.dart';
+import 'dart:typed_data'; // Import for Uint8List
 
 class FilePreviewMobile extends StatefulWidget {
-  const FilePreviewMobile({super.key, required this.contentModel});
+  const FilePreviewMobile({super.key, required this.contentModel, this.thumbnailBytes, this.isLoadingThumbnail = true});
   final ContentModel contentModel;
+  final Uint8List? thumbnailBytes;
+  final bool isLoadingThumbnail;
 
   @override
   FilePreviewMobileState createState() => FilePreviewMobileState();
@@ -167,11 +170,15 @@ class FilePreviewMobileState extends State<FilePreviewMobile> {
       child: Scaffold(
         body: SingleChildScrollView(
           child: Column(
+            spacing: 8,
             children: [
+              SizedBox(height: 16,),
               FilePreviewWidget(
                 contentModel: widget.contentModel,
                 width: MediaQuery.of(context).size.width - 32,
                 height: 300,
+                image: widget.thumbnailBytes,
+                isLoading: widget.isLoadingThumbnail,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

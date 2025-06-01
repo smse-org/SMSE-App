@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
@@ -169,6 +170,34 @@ class DisplayContentRepoImp extends DisplayContentRepo {
       }
 
       return const Right(null);
+    } on ServerFailuer catch (failure) {
+      return Left(failure);
+    } on DioException catch (dioError) {
+      return Left(ServerFailuer.fromDioError(dioError));
+    } catch (e) {
+      return Left(ServerFailuer("Unexpected error: ${e.toString()}"));
+    }
+  }
+
+  @override
+  Future<Either<Faliuer, String>> getThumbnail(int id) async {
+    try {
+      final response = await apiService.get(
+        endpoint: "contents/thumbnail/$id",
+        responseType: ResponseType.bytes,
+      );
+      
+      if (response != null) {
+        // Print the length of the response bytes
+        print("Received response length: ${response.length}");
+
+        // Convert bytes to base64 string
+        final base64Image = base64Encode(response);
+        print("Base64 Image: $base64Image");
+        return Right('data:image/jpeg;base64,$base64Image');
+      } else {
+        return Left(ServerFailuer("Thumbnail not found"));
+      }
     } on ServerFailuer catch (failure) {
       return Left(failure);
     } on DioException catch (dioError) {

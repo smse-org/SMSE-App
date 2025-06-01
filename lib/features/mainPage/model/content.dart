@@ -3,6 +3,7 @@ class ContentModel {
   String contentPath;
   bool contentTag;
   int contentSize;
+  String thumbnailPath;
   DateTime uploadDate;
 
   ContentModel({
@@ -10,7 +11,8 @@ class ContentModel {
     required this.contentPath,
     required this.contentTag,
     required this.contentSize,
-    required this.uploadDate
+    required this.uploadDate,
+    required this.thumbnailPath,
   });
 
   factory ContentModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class ContentModel {
       contentTag: json['content_tag'] ?? false,
       contentSize: json['content_size'] ?? 0,
       uploadDate: parseDate(json['upload_date']),
+      thumbnailPath: json['thumbnail_path'] ?? '',
     );
   }
 
@@ -64,6 +67,7 @@ class ContentModel {
       'content_tag': contentTag,
       'content_size': contentSize,
       'upload_date': uploadDate.toIso8601String(),
+      'thumbnail_path': thumbnailPath,
     };
   }
 }

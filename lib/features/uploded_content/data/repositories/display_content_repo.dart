@@ -8,4 +8,5 @@ abstract class DisplayContentRepo{
   Future<Either<Faliuer, String>> downloadContent({required int id , required String fileName});
   Future<Either<Faliuer, void>> toggleContentTag({required int id, required bool isTagged});
   Future<Either<Faliuer, void>> uploadFiles(List<String> files);
+  Future<Either<Faliuer,String>> getThumbnail(int id);
 }

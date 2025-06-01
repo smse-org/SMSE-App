@@ -55,4 +55,13 @@ class ContentCubit extends Cubit<ContentState> {
       (_) => emit(const ContentUploaded()),
     );
   }
+
+  Future<String> getThumbnail(int id) async {
+    final result = await repository.getThumbnail(id);
+    return result.fold(
+      (failure) => throw Exception(failure.errMessage),
+      (thumbnail) => thumbnail,
+    );
+  }
 }
+
