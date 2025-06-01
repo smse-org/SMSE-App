@@ -143,42 +143,57 @@ class MobileSearchView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          FutureBuilder<String>(
-                            future: context.read<ContentCubit>().getThumbnail(content.id!),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child: ShimmerLoading(child: ShimmerCard(width: double.infinity, height: double.infinity)),
-                                ); // Shimmer for image area
-                              }
-                              if (snapshot.hasData && snapshot.data != null) {
-                                try {
-                                  final Uint8List bytes = base64Decode(snapshot.data!.split(',').last);
-                                  return AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child: Image.memory(
-                                      bytes,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Center(child: Icon(Icons.image_not_supported, size: 64));
-                                      },
-                                    ),
-                                  );
-                                } catch (e) {
-                                  print('Error decoding base64: $e');
+                          // Check file extension and display icon if not an image type
+                          if (content.contentPath.toLowerCase().endsWith('.wav') ||
+                              content.contentPath.toLowerCase().endsWith('.txt') ||
+                              content.contentPath.toLowerCase().endsWith('.md'))
+                            const AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: Center(
+                                child: Icon(
+                                  Icons.insert_drive_file, // Default file icon
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          else
+                            FutureBuilder<String>(
+                              future: context.read<ContentCubit>().getThumbnail(content.id!),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
                                   return const AspectRatio(
                                     aspectRatio: 16 / 9,
-                                    child: Center(child: Icon(Icons.error, size: 64)),
-                                  ); // Error icon for image area
+                                    child: ShimmerLoading(child: ShimmerCard(width: double.infinity, height: double.infinity)),
+                                  ); // Shimmer for image area
                                 }
-                              }
-                              return const AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Center(child: Icon(Icons.image_not_supported, size: 64)),
-                              ); // Fallback icon for image area
-                            },
-                          ),
+                                if (snapshot.hasData && snapshot.data != null) {
+                                  try {
+                                    final Uint8List bytes = base64Decode(snapshot.data!.split(',').last);
+                                    return AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: Image.memory(
+                                        bytes,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Center(child: Icon(Icons.image_not_supported, size: 64));
+                                        },
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    print('Error decoding base64: $e');
+                                    return const AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: Center(child: Icon(Icons.error, size: 64)),
+                                    ); // Error icon for image area
+                                  }
+                                }
+                                return const AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: Center(child: Icon(Icons.image_not_supported, size: 64)),
+                                ); // Fallback icon for image area
+                              },
+                            ),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(

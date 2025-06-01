@@ -14,7 +14,6 @@ class FavoritesWeb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Uint8List bytes;
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 800),
@@ -22,7 +21,7 @@ class FavoritesWeb extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 2,
+            childAspectRatio: 2, // Adjust childAspectRatio as needed after visual check
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -35,7 +34,7 @@ class FavoritesWeb extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FileViewerPage(contentModel: content ),
+                      builder: (context) => FileViewerPage(contentModel: content),
                     ),
                   );
                 },
@@ -46,38 +45,13 @@ class FavoritesWeb extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          FutureBuilder<String>(
-                            future: context.read<ContentCubit>().getThumbnail(content.id!),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const ShimmerCircle(size: 40);
-                              }
-                              if (snapshot.hasData && snapshot.data != null) {
-                                try {
-                                  // Decode the base64 string to bytes
-                                  bytes = base64Decode(snapshot.data!.split(',').last);
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.memory(
-                                      bytes,
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Icon(Icons.image_not_supported, size: 40);
-                                      },
-                                    ),
-                                  );
-                                } catch (e) {
-                                  print('Error decoding base64: $e');
-                                  return const Icon(Icons.error, size: 40);
-                                }
-                              }
-                              return const Icon(Icons.image_not_supported, size: 40);
-                            },
+                          // Use a helper widget for consistent image/icon display
+                          SizedBox(
+                            width: 100, // Give a fixed width to the thumbnail/icon area
+                            child: _buildThumbnailOrIcon(context, content),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.favorite, color: Colors.red),
+                          const SizedBox(width: 7),
+                          const Icon(Icons.favorite, color: Colors.red), // Favorite icon
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -87,6 +61,7 @@ class FavoritesWeb extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                               overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],
@@ -96,6 +71,7 @@ class FavoritesWeb extends StatelessWidget {
                         'Size: ${content.contentSize} bytes',
                         style: const TextStyle(fontSize: 14),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         'Upload Date: ${content.uploadDate.toString().split('.')[0]}',
                         style: const TextStyle(fontSize: 14),
@@ -109,6 +85,65 @@ class FavoritesWeb extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildThumbnailOrIcon(BuildContext context, ContentModel content) {
+    // Check file extension and display icon if not an image type
+    if (content.contentPath.toLowerCase().endsWith('.wav') ||
+        content.contentPath.toLowerCase().endsWith('.txt') ||
+        content.contentPath.toLowerCase().endsWith('.md')) {
+      return const AspectRatio(
+        aspectRatio: 16 / 9, // Maintain consistent aspect ratio
+        child: Center(
+          child: Icon(
+            Icons.insert_drive_file, // Default file icon
+            size: 64,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    } else {
+      // Otherwise, fetch and display thumbnail
+      return FutureBuilder<String>(
+        future: context.read<ContentCubit>().getThumbnail(content.id!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const AspectRatio(
+              aspectRatio: 16 / 9, // Maintain consistent aspect ratio
+              child: ShimmerLoading(child: ShimmerCard(width: double.infinity, height: double.infinity)), // Use ShimmerRectangle with full width/height
+            );
+          }
+          if (snapshot.hasData && snapshot.data != null) {
+            try {
+              final Uint8List bytes = base64Decode(snapshot.data!.split(',').last);
+              return AspectRatio(
+                 aspectRatio: 16 / 9, // Maintain consistent aspect ratio
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.memory(
+                    bytes,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(child: Icon(Icons.image_not_supported, size: 64)); // Consistent icon size
+                    },
+                  ),
+                ),
+              );
+            } catch (e) {
+              print('Error decoding base64: $e');
+              return const AspectRatio(
+                 aspectRatio: 16 / 9, // Maintain consistent aspect ratio
+                child: Center(child: Icon(Icons.error, size: 64)), // Consistent icon size
+              );
+            }
+          }
+          return const AspectRatio(
+             aspectRatio: 16 / 9, // Maintain consistent aspect ratio
+            child: Center(child: Icon(Icons.image_not_supported, size: 64)), // Consistent icon size
+          );
+        },
+      );
+    }
   }
 }
 

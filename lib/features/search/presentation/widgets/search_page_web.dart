@@ -121,7 +121,7 @@ class WebSearchView extends StatelessWidget {
           crossAxisCount: number,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: 3 / 2,
+          childAspectRatio: 3 / 2.5,
         ),
         itemCount: results.length,
         itemBuilder: (context, index) {
@@ -166,42 +166,57 @@ class WebSearchView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          FutureBuilder<String>(
-                            future: context.read<ContentCubit>().getThumbnail(content.id!),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child: ShimmerLoading(child: ShimmerCard(width: double.infinity, height: double.infinity)),
-                                );
-                              }
-                              if (snapshot.hasData && snapshot.data != null) {
-                                try {
-                                  final Uint8List bytes = base64Decode(snapshot.data!.split(',').last);
-                                  return AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child: Image.memory(
-                                      bytes,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Center(child: Icon(Icons.image_not_supported, size: 64));
-                                      },
-                                    ),
-                                  );
-                                } catch (e) {
-                                  print('Error decoding base64: $e');
+                          // Check file extension and display icon if not an image type
+                          if (content.contentPath.toLowerCase().endsWith('.wav') ||
+                              content.contentPath.toLowerCase().endsWith('.txt') ||
+                              content.contentPath.toLowerCase().endsWith('.md'))
+                            const AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: Center(
+                                child: Icon(
+                                  Icons.insert_drive_file, // Default file icon
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          else
+                            FutureBuilder<String>(
+                              future: context.read<ContentCubit>().getThumbnail(content.id!),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
                                   return const AspectRatio(
                                     aspectRatio: 16 / 9,
-                                    child: Center(child: Icon(Icons.error, size: 64)),
+                                    child: ShimmerLoading(child: ShimmerCard(width: double.infinity, height: double.infinity)),
                                   );
                                 }
-                              }
-                              return const AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Center(child: Icon(Icons.image_not_supported, size: 64)),
-                              );
-                            },
-                          ),
+                                if (snapshot.hasData && snapshot.data != null) {
+                                  try {
+                                    final Uint8List bytes = base64Decode(snapshot.data!.split(',').last);
+                                    return AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: Image.memory(
+                                        bytes,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Center(child: Icon(Icons.image_not_supported, size: 64));
+                                        },
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    print('Error decoding base64: $e');
+                                    return const AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: Center(child: Icon(Icons.error, size: 64)),
+                                    );
+                                  }
+                                }
+                                return const AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: Center(child: Icon(Icons.image_not_supported, size: 64)),
+                                );
+                              },
+                            ),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
@@ -216,6 +231,7 @@ class WebSearchView extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
+
                                       child: Text(
                                         content.contentPath.split('/').last,
                                         style: const TextStyle(
@@ -223,21 +239,21 @@ class WebSearchView extends StatelessWidget {
                                           fontWeight: FontWeight.bold,
                                         ),
                                         overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                        maxLines: 3,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Size: ${content.contentSize} bytes',
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Upload Date: ${content.uploadDate.toString().split('.')[0]}',
-                                  style: const TextStyle(fontSize: 14),
-                                ),
+                                const SizedBox(height: 16),
+                                // Text(
+                                //   'Size: ${content.contentSize} bytes',
+                                //   style: const TextStyle(fontSize: 14),
+                                // ),
+                                // const SizedBox(height: 4),
+                                // Text(
+                                //   'Upload Date: ${content.uploadDate.toString().split('.')[0]}',
+                                //   style: const TextStyle(fontSize: 14),
+                                // ),
                               ],
                             ),
                           ),

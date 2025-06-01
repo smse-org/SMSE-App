@@ -196,22 +196,33 @@ class ContentWebPage extends StatelessWidget {
             itemCount: state.contents.length,
             itemBuilder: (context, index) {
               final content = state.contents[index];
-              return Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        content.contentPath.split('/').last,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(content.contentTag ? "Tagged" : "Not Tagged"),
-                      const Spacer(),
-                      buildActions(context, content),
-                    ],
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          FileViewerPage(contentModel: content,),
+                    ),
+                  );
+                },
+                child: Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          content.contentPath.split('/').last,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(content.contentTag ? "Tagged" : "Not Tagged"),
+                        const Spacer(),
+                        buildActions(context, content),
+                      ],
+                    ),
                   ),
                 ),
               );
