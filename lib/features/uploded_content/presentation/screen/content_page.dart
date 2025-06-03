@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:smse/core/network/api/api_service.dart';
+import 'package:smse/core/components/content_type_labels.dart';
 import 'package:smse/features/mainPage/model/content.dart';
 import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
 import 'package:smse/features/previewPage/presentation/widgets/preview_page_web.dart';
@@ -20,12 +21,48 @@ class ContentPage extends StatefulWidget {
 
 class _ContentPageState extends State<ContentPage> {
   late final ContentCubit _contentCubit;
+  String? selectedLabel;
 
   @override
   void initState() {
     super.initState();
     _contentCubit = ContentCubit(DisplayContentRepoImp(ApiService(Dio())));
     _contentCubit.fetchContents();
+  }
+
+  List<String> _getAvailableLabels(List<ContentModel> contents) {
+    final Set<String> labels = {'All'};
+    for (var content in contents) {
+      final extension = content.contentPath.split('.').last.toLowerCase();
+      if (['jpg', 'jpeg', 'png'].contains(extension)) {
+        labels.add('Images');
+      } else if (['txt', 'md'].contains(extension)) {
+        labels.add('Text');
+      } else if (['wav', 'mp3'].contains(extension)) {
+        labels.add('Audio');
+      }
+    }
+    return labels.toList();
+  }
+
+  List<ContentModel> _filterContents(List<ContentModel> contents) {
+    if (selectedLabel == null || selectedLabel == 'All') {
+      return contents;
+    }
+
+    return contents.where((content) {
+      final extension = content.contentPath.split('.').last.toLowerCase();
+      switch (selectedLabel) {
+        case 'Images':
+          return ['jpg', 'jpeg', 'png'].contains(extension);
+        case 'Text':
+          return ['txt', 'md'].contains(extension);
+        case 'Audio':
+          return ['wav', 'mp3'].contains(extension);
+        default:
+          return true;
+      }
+    }).toList();
   }
 
   @override
@@ -88,7 +125,31 @@ class _ContentPageState extends State<ContentPage> {
                     ),
                   ],
                 ),
-                body: const ContentWebPage(),
+                body: Column(
+                  children: [
+                    BlocBuilder<ContentCubit, ContentState>(
+                      builder: (context, state) {
+                        if (state is ContentLoaded) {
+                          return ContentTypeLabels(
+                            labels: _getAvailableLabels(state.contents),
+                            selectedLabel: selectedLabel,
+                            onLabelSelected: (label) {
+                              setState(() {
+                                selectedLabel = label;
+                              });
+                            },
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    Expanded(
+                      child: ContentWebPage(
+                        filterContents: _filterContents,
+                      ),
+                    ),
+                  ],
+                ),
               );
             } else {
               return Scaffold(
@@ -102,7 +163,32 @@ class _ContentPageState extends State<ContentPage> {
                     ),
                   ],
                 ),
-                body: const ContentMobilePage(),
+                body: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    BlocBuilder<ContentCubit, ContentState>(
+                      builder: (context, state) {
+                        if (state is ContentLoaded) {
+                          return ContentTypeLabels(
+                            labels: _getAvailableLabels(state.contents),
+                            selectedLabel: selectedLabel,
+                            onLabelSelected: (label) {
+                              setState(() {
+                                selectedLabel = label;
+                              });
+                            },
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    Expanded(
+                      child: ContentMobilePage(
+                        filterContents: _filterContents,
+                      ),
+                    ),
+                  ],
+                ),
               );
             }
           },
@@ -113,7 +199,12 @@ class _ContentPageState extends State<ContentPage> {
 }
 
 class ContentMobilePage extends StatelessWidget {
-  const ContentMobilePage({super.key});
+  final List<ContentModel> Function(List<ContentModel>) filterContents;
+
+  const ContentMobilePage({
+    super.key,
+    required this.filterContents,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -124,27 +215,26 @@ class ContentMobilePage extends StatelessWidget {
         } else if (state is ContentError) {
           return Center(child: Text(state.message));
         } else if (state is ContentLoaded) {
+          final filteredContents = filterContents(state.contents);
           return ListView.builder(
-            itemCount: state.contents.length,
+            itemCount: filteredContents.length,
             itemBuilder: (context, index) {
-              final content = state.contents[index];
-              return
-                  Card(
-                    child: ListTile(
-                      title: Text(content.contentPath.split('/').last),
-                      subtitle: Text(content.contentTag ? "Tagged" : "Not Tagged"),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>  FileViewerPage(contentModel:  content,),
-                          ),
-                        );
-                      },
-                      trailing:  buildActionsMobile(context, content)
-                    ),
-                  );
-
+              final content = filteredContents[index];
+              return Card(
+                child: ListTile(
+                  title: Text(content.contentPath.split('/').last),
+                  subtitle: Text(content.contentTag ? "Tagged" : "Not Tagged"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FileViewerPage(contentModel: content),
+                      ),
+                    );
+                  },
+                  trailing: buildActionsMobile(context, content)
+                ),
+              );
             },
           );
         }
@@ -175,7 +265,12 @@ class ContentMobilePage extends StatelessWidget {
 }
 
 class ContentWebPage extends StatelessWidget {
-  const ContentWebPage({super.key});
+  final List<ContentModel> Function(List<ContentModel>) filterContents;
+
+  const ContentWebPage({
+    super.key,
+    required this.filterContents,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -186,6 +281,7 @@ class ContentWebPage extends StatelessWidget {
         } else if (state is ContentError) {
           return Center(child: Text(state.message));
         } else if (state is ContentLoaded) {
+          final filteredContents = filterContents(state.contents);
           return GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
@@ -193,16 +289,15 @@ class ContentWebPage extends StatelessWidget {
               mainAxisSpacing: 16.0,
             ),
             padding: const EdgeInsets.all(16.0),
-            itemCount: state.contents.length,
+            itemCount: filteredContents.length,
             itemBuilder: (context, index) {
-              final content = state.contents[index];
+              final content = filteredContents[index];
               return InkWell(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          FileViewerPage(contentModel: content,),
+                      builder: (context) => FileViewerPage(contentModel: content),
                     ),
                   );
                 },

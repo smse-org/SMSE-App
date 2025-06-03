@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/components/content_card.dart';
 import 'package:smse/core/components/shimmer_loading.dart';
+import 'package:smse/core/components/content_type_labels.dart';
 import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
@@ -11,9 +12,51 @@ import 'package:smse/features/uploded_content/presentation/screen/content_page.d
 import 'dart:convert';
 import 'dart:typed_data';
 
-class WebSearchView extends StatelessWidget {
+class WebSearchView extends StatefulWidget {
   const WebSearchView({super.key, required this.number});
   final int number;
+
+  @override
+  State<WebSearchView> createState() => _WebSearchViewState();
+}
+
+class _WebSearchViewState extends State<WebSearchView> {
+  String? selectedLabel;
+
+  List<String> _getAvailableLabels(List<SearchResult> results) {
+    final Set<String> labels = {'All'};
+    for (var result in results) {
+      final extension = result.contentPath.split('.').last.toLowerCase();
+      if (['jpg', 'jpeg', 'png'].contains(extension)) {
+        labels.add('Images');
+      } else if (['txt', 'md'].contains(extension)) {
+        labels.add('Text');
+      } else if (['wav', 'mp3'].contains(extension)) {
+        labels.add('Audio');
+      }
+    }
+    return labels.toList();
+  }
+
+  List<SearchResult> _filterResults(List<SearchResult> results) {
+    if (selectedLabel == null || selectedLabel == 'All') {
+      return results;
+    }
+
+    return results.where((result) {
+      final extension = result.contentPath.split('.').last.toLowerCase();
+      switch (selectedLabel) {
+        case 'Images':
+          return ['jpg', 'jpeg', 'png'].contains(extension);
+        case 'Text':
+          return ['txt', 'md'].contains(extension);
+        case 'Audio':
+          return ['wav', 'mp3'].contains(extension);
+        default:
+          return true;
+      }
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,16 +74,26 @@ class WebSearchView extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    ContentTypeLabels(
+                      labels: _getAvailableLabels(state.searchResults),
+                      selectedLabel: selectedLabel,
+                      onLabelSelected: (label) {
+                        setState(() {
+                          selectedLabel = label;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: Text(
                         key: ValueKey(state.searchResults.length),
-                        'Found ${state.searchResults.length} results',
+                        'Found ${_filterResults(state.searchResults).length} results',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildContentGrid(state.searchResults),
+                    _buildContentGrid(_filterResults(state.searchResults)),
                   ],
                 )
               else if (state is SearchError)
@@ -60,7 +113,7 @@ class WebSearchView extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(8.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: number,
+        crossAxisCount: widget.number,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
         childAspectRatio: 3 / 2,
@@ -118,7 +171,7 @@ class WebSearchView extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.all(8.0),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: number,
+          crossAxisCount: widget.number,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
           childAspectRatio: 3 / 2.5,

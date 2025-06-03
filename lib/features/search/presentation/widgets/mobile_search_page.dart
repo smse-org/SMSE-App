@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/core/components/content_card.dart';
 import 'package:smse/core/components/shimmer_loading.dart';
+import 'package:smse/core/components/content_type_labels.dart';
 import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
@@ -11,8 +12,50 @@ import 'package:smse/features/uploded_content/presentation/screen/content_page.d
 import 'dart:convert';
 import 'dart:typed_data';
 
-class MobileSearchView extends StatelessWidget {
+class MobileSearchView extends StatefulWidget {
   const MobileSearchView({super.key});
+
+  @override
+  State<MobileSearchView> createState() => _MobileSearchViewState();
+}
+
+class _MobileSearchViewState extends State<MobileSearchView> {
+  String? selectedLabel;
+
+  List<String> _getAvailableLabels(List<SearchResult> results) {
+    final Set<String> labels = {'All'};
+    for (var result in results) {
+      final extension = result.contentPath.split('.').last.toLowerCase();
+      if (['jpg', 'jpeg', 'png'].contains(extension)) {
+        labels.add('Images');
+      } else if (['txt', 'md'].contains(extension)) {
+        labels.add('Text');
+      } else if (['wav', 'mp3'].contains(extension)) {
+        labels.add('Audio');
+      }
+    }
+    return labels.toList();
+  }
+
+  List<SearchResult> _filterResults(List<SearchResult> results) {
+    if (selectedLabel == null || selectedLabel == 'All') {
+      return results;
+    }
+
+    return results.where((result) {
+      final extension = result.contentPath.split('.').last.toLowerCase();
+      switch (selectedLabel) {
+        case 'Images':
+          return ['jpg', 'jpeg', 'png'].contains(extension);
+        case 'Text':
+          return ['txt', 'md'].contains(extension);
+        case 'Audio':
+          return ['wav', 'mp3'].contains(extension);
+        default:
+          return true;
+      }
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,33 +63,45 @@ class MobileSearchView extends StatelessWidget {
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              if (state is SearchLoading)
-                _buildShimmerLoading()
-              else if (state is SearchSucsess)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        key: ValueKey(state.searchResults.length),
-                        'Found ${state.searchResults.length} results',
-                        style: Theme.of(context).textTheme.titleMedium,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                if (state is SearchLoading)
+                  _buildShimmerLoading()
+                else if (state is SearchSucsess)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ContentTypeLabels(
+                        labels: _getAvailableLabels(state.searchResults),
+                        selectedLabel: selectedLabel,
+                        onLabelSelected: (label) {
+                          setState(() {
+                            selectedLabel = label;
+                          });
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildContentList(state.searchResults),
-                  ],
-                )
-              else if (state is SearchError)
-                Center(child: Text(state.message))
-              else
-                const Center(child: Text('Start searching...')),
-            ],
+                      const SizedBox(height: 16),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Text(
+                          key: ValueKey(state.searchResults.length),
+                          'Found ${_filterResults(state.searchResults).length} results',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildContentList(_filterResults(state.searchResults)),
+                    ],
+                  )
+                else if (state is SearchError)
+                  Center(child: Text(state.message))
+                else
+                  const Center(child: Text('Start searching...')),
+              ],
+            ),
           ),
         );
       },
