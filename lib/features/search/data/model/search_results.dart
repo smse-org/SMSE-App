@@ -16,7 +16,7 @@ class SearchResult {
   factory SearchResult.fromJson(Map<String, dynamic> json) {
     return SearchResult(
       contentId: json['content_id'] ?? 0,
-      contentPath: json['content_path'] ?? '',
+      contentPath: json['content_path'].split("_").last,
       contentTag: json['content_tag'] ?? false,
       similarityScore: (json['similarity_score'] ?? 0.0).toDouble(),
     );

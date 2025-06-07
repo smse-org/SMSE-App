@@ -44,7 +44,7 @@ class ContentModel {
 
     return ContentModel(
       id: json['id'],
-      contentPath: json['content_path'],
+      contentPath: json['content_path'].split("_").last,
       contentTag: json['content_tag'] ?? false,
       contentSize: json['content_size'] ?? 0,
       uploadDate: parseDate(json['upload_date']),
