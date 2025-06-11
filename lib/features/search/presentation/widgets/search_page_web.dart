@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smse/core/components/content_card.dart';
+
 import 'package:smse/core/components/shimmer_loading.dart';
+import 'package:smse/core/components/content_card.dart';
 import 'package:smse/core/components/content_type_labels.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:smse/features/previewPage/presentation/screen/preview_page.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
 import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
-import 'package:smse/features/uploded_content/presentation/screen/content_page.dart';
-import 'dart:convert';
-import 'dart:typed_data';
 
 class WebSearchView extends StatefulWidget {
   const WebSearchView({super.key, required this.number});
@@ -20,8 +21,40 @@ class WebSearchView extends StatefulWidget {
   State<WebSearchView> createState() => _WebSearchViewState();
 }
 
-class _WebSearchViewState extends State<WebSearchView> {
+class _WebSearchViewState extends State<WebSearchView> with SingleTickerProviderStateMixin {
   String? selectedLabel;
+  late AnimationController _loadingTextController;
+  final List<String> _loadingTexts = [
+    'Please wait...',
+    'Processing your search...',
+    'Finding relevant results...',
+    'Almost there...',
+  ];
+  int _currentLoadingTextIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadingTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+    _loadingTextController.addListener(_updateLoadingText);
+  }
+
+  @override
+  void dispose() {
+    _loadingTextController.dispose();
+    super.dispose();
+  }
+
+  void _updateLoadingText() {
+    if (_loadingTextController.value >= 1.0) {
+      setState(() {
+        _currentLoadingTextIndex = (_currentLoadingTextIndex + 1) % _loadingTexts.length;
+      });
+    }
+  }
 
   List<String> _getAvailableLabels(List<SearchResult> results) {
     final Set<String> labels = {'All'};
@@ -64,46 +97,72 @@ class _WebSearchViewState extends State<WebSearchView> {
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              if (state is SearchLoading)
-                _buildShimmerLoading()
-              else if (state is SearchSucsess)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ContentTypeLabels(
-                      labels: _getAvailableLabels(state.searchResults),
-                      selectedLabel: selectedLabel,
-                      onLabelSelected: (label) {
-                        setState(() {
-                          selectedLabel = label;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        key: ValueKey(state.searchResults.length),
-                        'Found ${_filterResults(state.searchResults).length} results',
-                        style: Theme.of(context).textTheme.titleMedium,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                if (state is SearchLoading)
+                  _buildLoadingIndicator()
+                else if (state is SearchSucsess)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ContentTypeLabels(
+                        labels: _getAvailableLabels(state.searchResults),
+                        selectedLabel: selectedLabel,
+                        onLabelSelected: (label) {
+                          setState(() {
+                            selectedLabel = label;
+                          });
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildContentGrid(_filterResults(state.searchResults)),
-                  ],
-                )
-              else if (state is SearchError)
-                Center(child: Text(state.message))
-              else
-                const Center(child: Text('Start searching...')),
-            ],
+                      const SizedBox(height: 16),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Text(
+                          key: ValueKey(state.searchResults.length),
+                          'Found ${_filterResults(state.searchResults).length} results',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildContentGrid(_filterResults(state.searchResults)),
+                    ],
+                  )
+                else if (state is SearchError)
+                  Center(child: Text(state.message))
+                else
+                  const Center(child: Text('Start searching...')),
+              ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 20),
+          AnimatedBuilder(
+            animation: _loadingTextController,
+            builder: (context, child) {
+              return Text(
+                _loadingTexts[_currentLoadingTextIndex],
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -169,7 +228,7 @@ class _WebSearchViewState extends State<WebSearchView> {
         key: ValueKey(results.length),
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(bottom: 16.0),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: widget.number,
           crossAxisSpacing: 10,
@@ -284,7 +343,6 @@ class _WebSearchViewState extends State<WebSearchView> {
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
-
                                       child: Text(
                                         content.contentPath.split('/').last,
                                         style: const TextStyle(
@@ -297,16 +355,6 @@ class _WebSearchViewState extends State<WebSearchView> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
-                                // Text(
-                                //   'Size: ${content.contentSize} bytes',
-                                //   style: const TextStyle(fontSize: 14),
-                                // ),
-                                // const SizedBox(height: 4),
-                                // Text(
-                                //   'Upload Date: ${content.uploadDate.toString().split('.')[0]}',
-                                //   style: const TextStyle(fontSize: 14),
-                                // ),
                               ],
                             ),
                           ),

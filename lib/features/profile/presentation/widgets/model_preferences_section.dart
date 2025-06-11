@@ -17,27 +17,19 @@ class _ModelPreferencesSectionState extends State<ModelPreferencesSection> {
   String? selectedAudioModel;
 
   final List<String> textModels = [
-    'GPT-4',
-    'GPT-3.5',
-    'Claude',
-    'Llama 2',
-    'Mistral',
+    'ImageBind',
+    'All-MiniLM',
+    'All-mpnet',
+    'CLIP',
   ];
 
   final List<String> imageModels = [
-    'DALL-E 3',
-    'Stable Diffusion',
-    'Midjourney',
-    'Imagen',
-    'SDXL',
+    'ImageBind',
+    'CLIP'
   ];
 
   final List<String> audioModels = [
-    'Whisper',
-    'Wav2Vec',
-    'Tacotron',
-    'FastSpeech',
-    'VALL-E',
+   'ImageBind',
   ];
 
   @override
@@ -86,7 +78,7 @@ class _ModelPreferencesSectionState extends State<ModelPreferencesSection> {
             
             // Text Models Selection
             const Text(
-              'Text Generation Models',
+              'Text Models',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -122,7 +114,7 @@ class _ModelPreferencesSectionState extends State<ModelPreferencesSection> {
 
             // Image Models Selection
             const Text(
-              'Image Generation Models',
+              'Image Models',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -158,7 +150,7 @@ class _ModelPreferencesSectionState extends State<ModelPreferencesSection> {
 
             // Audio Models Selection
             const Text(
-              'Audio Generation Models',
+              'Audio Models',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

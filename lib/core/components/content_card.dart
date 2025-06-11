@@ -3,9 +3,8 @@ import 'package:smse/features/previewPage/presentation/screen/preview_page.dart'
 
 class ContentCardWeb extends StatelessWidget {
   final String title;
-  final int relevanceScore;
 
-  const ContentCardWeb({super.key, required this.title, required this.relevanceScore});
+  const ContentCardWeb({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +22,6 @@ class ContentCardWeb extends StatelessWidget {
               Image.asset('assets/image/beach.jpg', fit: BoxFit.cover, height: 200),
               const SizedBox(height: 8),
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Relevance Score: $relevanceScore'),
               const SizedBox(height: 8),
 
             ],
