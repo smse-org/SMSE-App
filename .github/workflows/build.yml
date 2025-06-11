@@ -102,69 +102,69 @@ jobs:
       - name: Build Web
         run: flutter build web --release --web-renderer html
 
-        #10.5 Fix macOS Build Configuration
-      - name: Fix macOS Build Configuration
-        run: |
-          if [ -d "macos" ]; then
-            echo "Configuring macOS build settings..."
+      #   #10.5 Fix macOS Build Configuration
+      # - name: Fix macOS Build Configuration
+      #   run: |
+      #     if [ -d "macos" ]; then
+      #       echo "Configuring macOS build settings..."
             
-            if [ -f "macos/Podfile" ]; then
-              cp macos/Podfile macos/Podfile.backup
+      #       if [ -f "macos/Podfile" ]; then
+      #         cp macos/Podfile macos/Podfile.backup
               
-              sed -i '' "s/platform :osx, '[0-9.]*'/platform :osx, '10.15'/g" macos/Podfile
+      #         sed -i '' "s/platform :osx, '[0-9.]*'/platform :osx, '10.15'/g" macos/Podfile
               
-              if ! grep -q "platform :osx" macos/Podfile; then
-                sed -i '' '1i\
-                platform :osx, '\''10.15'\''
-                ' macos/Podfile
-                        fi
+      #         if ! grep -q "platform :osx" macos/Podfile; then
+      #           sed -i '' '1i\
+      #           platform :osx, '\''10.15'\''
+      #           ' macos/Podfile
+      #                   fi
                         
-                        if grep -q "post_install" macos/Podfile; then
-                          if ! grep -q "MACOSX_DEPLOYMENT_TARGET" macos/Podfile; then
-                            sed -i '' '/post_install do |installer|/a\
-                              \  installer.pods_project.targets.each do |target|\
-                              \    target.build_configurations.each do |config|\
-                              \      config.build_settings['\''MACOSX_DEPLOYMENT_TARGET'\''] = '\''10.15'\''\
-                              \    end\
-                              \  end
-                            ' macos/Podfile
-                          fi
-                        else
-                          echo "" >> macos/Podfile
-                          echo "post_install do |installer|" >> macos/Podfile
-                          echo "  installer.pods_project.targets.each do |target|" >> macos/Podfile
-                          echo "    flutter_additional_macos_build_settings(target)" >> macos/Podfile
-                          echo "    target.build_configurations.each do |config|" >> macos/Podfile
-                          echo "      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'" >> macos/Podfile
-                          echo "    end" >> macos/Podfile
-                          echo "  end" >> macos/Podfile
-                          echo "end" >> macos/Podfile
-                        fi
+      #                   if grep -q "post_install" macos/Podfile; then
+      #                     if ! grep -q "MACOSX_DEPLOYMENT_TARGET" macos/Podfile; then
+      #                       sed -i '' '/post_install do |installer|/a\
+      #                         \  installer.pods_project.targets.each do |target|\
+      #                         \    target.build_configurations.each do |config|\
+      #                         \      config.build_settings['\''MACOSX_DEPLOYMENT_TARGET'\''] = '\''10.15'\''\
+      #                         \    end\
+      #                         \  end
+      #                       ' macos/Podfile
+      #                     fi
+      #                   else
+      #                     echo "" >> macos/Podfile
+      #                     echo "post_install do |installer|" >> macos/Podfile
+      #                     echo "  installer.pods_project.targets.each do |target|" >> macos/Podfile
+      #                     echo "    flutter_additional_macos_build_settings(target)" >> macos/Podfile
+      #                     echo "    target.build_configurations.each do |config|" >> macos/Podfile
+      #                     echo "      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'" >> macos/Podfile
+      #                     echo "    end" >> macos/Podfile
+      #                     echo "  end" >> macos/Podfile
+      #                     echo "end" >> macos/Podfile
+      #                   fi
                         
-                        echo "Updated Podfile:"
-                        cat macos/Podfile
-                      fi
+      #                   echo "Updated Podfile:"
+      #                   cat macos/Podfile
+      #                 fi
                       
-                      echo "MACOSX_DEPLOYMENT_TARGET=10.15" >> $GITHUB_ENV
-                    fi
+      #                 echo "MACOSX_DEPLOYMENT_TARGET=10.15" >> $GITHUB_ENV
+      #               fi
 
-        #11 Build macOS Desktop
-      - name: Build macOS Desktop
-        run: |
-          flutter config --enable-macos-desktop
+      #   #11 Build macOS Desktop
+      # - name: Build macOS Desktop
+      #   run: |
+      #     flutter config --enable-macos-desktop
           
-          # Clean and rebuild to apply changes
-          flutter clean
-          flutter pub get
+      #     # Clean and rebuild to apply changes
+      #     flutter clean
+      #     flutter pub get
           
-          # Use the environment variable set in previous step
-          export MACOSX_DEPLOYMENT_TARGET=10.15
+      #     # Use the environment variable set in previous step
+      #     export MACOSX_DEPLOYMENT_TARGET=10.15
           
-          # Install pods with updated configuration
-          cd macos && pod install --repo-update && cd ..
+      #     # Install pods with updated configuration
+      #     cd macos && pod install --repo-update && cd ..
           
-          # Build macOS app
-          flutter build macos --release
+      #     # Build macOS app
+      #     flutter build macos --release
 
       - name: Compress Archives
         run: |
@@ -205,12 +205,12 @@ jobs:
           name: Web-Build
           path: build/web_build.tar.gz
 
-      - name: Upload macOS Build
-        uses: actions/upload-artifact@v4
-        if: hashFiles('build/macos_build.tar.gz') != ''
-        with:
-          name: macOS-Build
-          path: build/macos_build.tar.gz
+      # - name: Upload macOS Build
+      #   uses: actions/upload-artifact@v4
+      #   if: hashFiles('build/macos_build.tar.gz') != ''
+      #   with:
+      #     name: macOS-Build
+      #     path: build/macos_build.tar.gz
           
         #13 Setup Pages (for web deployment)
       - name: Setup Pages
