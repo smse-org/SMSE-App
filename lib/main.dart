@@ -9,6 +9,8 @@ import 'package:smse/core/services/notification_service.dart';
 import 'package:smse/core/network/api/api_service.dart';
 import 'package:smse/features/profile/data/repositories/preferences_repository_impl.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:smse/features/mainPage/controller/file_cubit.dart';
+import 'package:smse/features/mainPage/repo/file_upload_repo_imp.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,13 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<ThemeCubit>(
           create: (context) => ThemeCubit(PreferencesRepositoryImpl(ApiService(Dio()))),
+        ),
+        BlocProvider<FileUploadCubit>(
+          create: (context) => FileUploadCubit(
+            FileUploadRepoImp(
+              ApiService(Dio()),
+            ),
+          ),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

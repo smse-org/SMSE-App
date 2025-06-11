@@ -7,6 +7,7 @@ import 'package:smse/constants.dart';
 import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/features/home/presentation/controller/theme_cubit/theme_cubit.dart';
 import 'package:smse/features/mainPage/controller/file_cubit.dart';
+import 'package:smse/features/mainPage/controller/file_state.dart';
 import 'package:smse/features/mainPage/web.dart';
 
 class MobileLayout extends StatefulWidget {
@@ -39,20 +40,17 @@ class _MobileLayoutState extends State<MobileLayout> {
 
     if (!mounted) return;
 
-    if (result != null) {
-      List<String> files = result.paths.whereType<String>().toList();
-      if (files.isNotEmpty) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return BlocProvider.value(
-              value: context.read<FileUploadCubit>(),
-              child: FileUploadDialog(files: files),
-            );
-          },
-        );
-      }
+    if (result != null && result.files.isNotEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return BlocProvider.value(
+            value: context.read<FileUploadCubit>(),
+            child: FileUploadDialog(files: result.files),
+          );
+        },
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("No files selected.")),
@@ -131,5 +129,100 @@ class _MobileLayoutState extends State<MobileLayout> {
       default:
         return 0;
     }
+  }
+}
+
+class FileUploadDialog extends StatefulWidget {
+  final List<dynamic> files; // Can be either String (path) or Uint8List (bytes)
+
+  const FileUploadDialog({super.key, required this.files});
+
+  @override
+  FileUploadDialogState createState() => FileUploadDialogState();
+}
+
+class FileUploadDialogState extends State<FileUploadDialog> {
+  @override
+  void initState() {
+    super.initState();
+    _startUploading();
+  }
+
+  Future<void> _startUploading() async {
+    // For desktop/mobile platforms
+    final filePaths = widget.files.whereType<String>().toList();
+    if (filePaths.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No valid files selected")),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    // Get the FileUploadCubit from the context
+    final fileUploadCubit = context.read<FileUploadCubit>();
+    // Start the upload
+    await fileUploadCubit.uploadFiles(filePaths);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<FileUploadCubit, FileUploadState>(
+      listener: (context, state) {
+        if (state is FileUploadSuccess) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Files uploaded successfully!")),
+          );
+        } else if (state is FileUploadFailure) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Upload failed: {state.error}")),
+          );
+        }
+      },
+      child: BlocBuilder<FileUploadCubit, FileUploadState>(
+        builder: (context, state) {
+          double progress = 0.0;
+          if (state is FileUploadInProgress) {
+            progress = (state.progress! * 100).toDouble();
+          }
+
+          return AlertDialog(
+            title: const Text("Uploading Files"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Uploading... ${progress.toStringAsFixed(0)}%",
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                LinearProgressIndicator(
+                  value: progress / 100,
+                  minHeight: 10,
+                  backgroundColor: Colors.grey[300],
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "File ${((progress / 100) * widget.files.length).ceil()} of ${widget.files.length}",
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+            actions: [
+              if (state is! FileUploadSuccess)
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }
