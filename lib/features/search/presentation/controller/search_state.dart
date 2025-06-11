@@ -26,10 +26,10 @@ class SearchSuggestionsLoaded extends SearchState{
 }
 
 class QueriesSuccess extends SearchState{
-  final List<SearchQuery> searchQuery;
-  const QueriesSuccess(this.searchQuery);
+  final List<SearchQuery> queries;
+  const QueriesSuccess(this.queries);
   @override
-  List<Object?> get props => [searchQuery];
+  List<Object?> get props => [queries];
 }
 class SearchError extends SearchState {
   final String message;

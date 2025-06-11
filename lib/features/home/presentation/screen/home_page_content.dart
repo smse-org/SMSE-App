@@ -5,52 +5,70 @@ import 'package:smse/core/routes/app_router.dart';
 import 'package:smse/core/services/suggestions_service.dart';
 import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
+import 'package:smse/features/search/data/repositories/search_repo_imp.dart';
 import 'package:smse/features/search/presentation/controller/search_cubit.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
 import 'package:smse/features/search/presentation/screen/search_page.dart';
+import 'package:smse/features/uploded_content/presentation/controller/cubit/content_cubit.dart';
+import 'package:smse/features/uploded_content/data/repositories/display_content_repo_imp.dart';
+import 'package:smse/core/network/api/api_service.dart';
+import 'package:dio/dio.dart';
+import 'package:smse/features/search/data/repositories/search_repo.dart';
 
 import '../widgets/mobile_home.dart';
 import '../widgets/web_home.dart';
-
+import '../widgets/searchbar.dart';
 
 class HomePageContent extends StatelessWidget {
   const HomePageContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    context.read<SearchCubit>().searchQueries();
-
-    return BlocListener<SearchCubit,SearchState>(
-      listener: (context, state) {
-        if (state is SearchError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-            ),
-          );
-        } else if (state is SearchSucsess) {
-          // Use pushNamed instead of go for web compatibility
-              Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                SearchPage(searchResults: state.searchResults)));
-        }
-      },
-      child: BlocBuilder<SearchCubit, SearchState>(
-        buildWhen: (previous, current) => 
-          current is QueriesSuccess || 
-          current is SearchInitial,
-        builder: (context, state) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 600) {
-                // Display mobile UI if the screen width is less than 600
-                return const SafeArea(child: MobileHomePage());
-              } else {
-                // Display web UI if the screen width is 600 or more
-                return const WebHomePage();
-              }
-            },
-          );
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<SearchCubit>(
+          create: (context) => SearchCubit(
+            SearchRepositoryImpl(ApiService(Dio())),
+          )..searchQueries(),
+        ),
+        BlocProvider<ContentCubit>(
+          create: (context) => ContentCubit(
+            DisplayContentRepoImp(ApiService(Dio())),
+          ),
+        ),
+      ],
+      child: BlocListener<SearchCubit,SearchState>(
+        listener: (context, state) {
+          if (state is SearchError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+              ),
+            );
+          } else if (state is SearchSucsess) {
+            // Use pushNamed instead of go for web compatibility
+            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+              SearchPage(searchResults: state.searchResults)));
+          }
         },
+        child: BlocBuilder<SearchCubit, SearchState>(
+          buildWhen: (previous, current) => 
+            current is QueriesSuccess || 
+            current is SearchInitial,
+          builder: (context, state) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 600) {
+                  // Display mobile UI if the screen width is less than 600
+                  return const SafeArea(child: MobileHomePage());
+                } else {
+                  // Display web UI if the screen width is 600 or more
+                  return const WebHomePage();
+                }
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -63,6 +81,7 @@ class ModalitySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4.0),
@@ -125,11 +144,10 @@ class _ModalityChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SearchCubit, SearchState>(
-      buildWhen: (previous, current) => 
-        current is ModalityChanged || 
-        current is SearchInitial,
+      buildWhen: (previous, current) => true, // Always rebuild to ensure state is current
       builder: (context, state) {
-        final isSelected = context.read<SearchCubit>().selectedModalities.contains(value);
+        final searchCubit = context.read<SearchCubit>();
+        final isSelected = searchCubit.selectedModalities.contains(value);
         final isDark = Theme.of(context).brightness == Brightness.dark;
         
         return TweenAnimationBuilder<double>(
@@ -139,56 +157,61 @@ class _ModalityChip extends StatelessWidget {
           builder: (context, animationValue, child) {
             return Transform.scale(
               scale: 0.95 + (animationValue * 0.05),
-              child: FilterChip(
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      icon,
-                      size: 18,
-                      color: isSelected 
-                        ? Colors.white
-                        : (isDark ? Colors.white70 : Colors.black87),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected 
-                          ? Colors.white
-                          : (isDark ? Colors.white70 : Colors.black87),
-                      ),
-                    ),
-                    if (isSelected) ...[
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ],
-                ),
-                selected: isSelected,
-                onSelected: (selected) {
-                  context.read<SearchCubit>().toggleModality(value);
-                },
-                backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                selectedColor: Theme.of(context).colorScheme.primary,
-                checkmarkColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    searchCubit.toggleModality(value);
+                  },
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected 
-                      ? Theme.of(context).colorScheme.primary
-                      : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
-                    width: 1,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected 
+                        ? Theme.of(context).colorScheme.primary
+                        : (isDark ? Colors.grey[800] : Colors.grey[200]),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected 
+                          ? Theme.of(context).colorScheme.primary
+                          : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          icon,
+                          size: 18,
+                          color: isSelected 
+                            ? Colors.white
+                            : (isDark ? Colors.white70 : Colors.black87),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            color: isSelected 
+                              ? Colors.white
+                              : (isDark ? Colors.white70 : Colors.black87),
+                          ),
+                        ),
+                        if (isSelected) ...[
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-                elevation: 0,
               ),
             );
           },

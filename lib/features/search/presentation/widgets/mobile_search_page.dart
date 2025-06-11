@@ -19,8 +19,64 @@ class MobileSearchView extends StatefulWidget {
   State<MobileSearchView> createState() => _MobileSearchViewState();
 }
 
-class _MobileSearchViewState extends State<MobileSearchView> {
+class _MobileSearchViewState extends State<MobileSearchView> with SingleTickerProviderStateMixin {
   String? selectedLabel;
+  late AnimationController _loadingTextController;
+  final List<String> _loadingTexts = [
+    'Please wait...',
+    'Processing your search...',
+    'Finding relevant results...',
+    'Almost there...',
+  ];
+  int _currentLoadingTextIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadingTextController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+    _loadingTextController.addListener(_updateLoadingText);
+  }
+
+  @override
+  void dispose() {
+    _loadingTextController.dispose();
+    super.dispose();
+  }
+
+  void _updateLoadingText() {
+    if (_loadingTextController.value >= 1.0) {
+      setState(() {
+        _currentLoadingTextIndex = (_currentLoadingTextIndex + 1) % _loadingTexts.length;
+      });
+    }
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 20),
+          AnimatedBuilder(
+            animation: _loadingTextController,
+            builder: (context, child) {
+              return Text(
+                _loadingTexts[_currentLoadingTextIndex],
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   List<String> _getAvailableLabels(List<SearchResult> results) {
     final Set<String> labels = {'All'};
@@ -69,7 +125,7 @@ class _MobileSearchViewState extends State<MobileSearchView> {
               children: [
                 const SizedBox(height: 20),
                 if (state is SearchLoading)
-                  _buildShimmerLoading()
+                  _buildLoadingIndicator()
                 else if (state is SearchSucsess)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,7 +287,10 @@ class _MobileSearchViewState extends State<MobileSearchView> {
                                         bytes,
                                         fit: BoxFit.cover,
                                         errorBuilder: (context, error, stackTrace) {
-                                          return const Center(child: Icon(Icons.image_not_supported, size: 64));
+                                          return const AspectRatio(
+                                            aspectRatio: 16 / 9,
+                                            child: Center(child: Icon(Icons.image_not_supported, size: 64)),
+                                          ); // Error icon for image area
                                         },
                                       ),
                                     );

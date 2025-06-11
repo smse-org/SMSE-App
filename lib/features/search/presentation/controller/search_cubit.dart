@@ -1,53 +1,80 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smse/features/search/data/model/search_query.dart';
 import 'package:smse/features/search/data/model/search_results.dart';
 import 'package:smse/features/search/data/repositories/search_repo.dart';
 import 'package:smse/features/search/presentation/controller/search_state.dart';
 
 class SearchCubit extends Cubit<SearchState> {
-  final SearchRepository searchRepository;
-  List<String> _selectedModalities = [];
+  final SearchRepository repository;
+  final List<String> _selectedModalities = [];
   int? _limit;
   List<SearchQuery> _recentQueries = [];
 
-  SearchCubit(this.searchRepository) : super(SearchInitial());
+  SearchCubit(this.repository) : super(SearchInitial());
 
-  // Method to search with a query
-  void search(String query) async {
-    if (query.trim().isEmpty) return;
-    
+  Future<void> searchWithText(
+    String query, {
+    int? limit,
+    List<String>? modalities,
+  }) async {
     emit(SearchLoading());
-    final result = await searchRepository.searchFiles(
+    final result = await repository.searchWithText(
       query,
-      limit: _limit,
-      modalities: _selectedModalities.isNotEmpty ? _selectedModalities : null,
+      limit: limit,
+      modalities: modalities,
     );
     result.fold(
       (failure) => emit(SearchError(failure.errMessage)),
-      (searchResults) {
-        // Filter results based on selected modalities if any are selected
-        if (_selectedModalities.isNotEmpty) {
-          final filteredResults = searchResults.where((result) => 
-            _selectedModalities.contains(result.contentType)
-          ).toList();
-          emit(SearchSucsess(filteredResults));
-        } else {
-          emit(SearchSucsess(searchResults));
-        }
-      },
+      (results) => emit(SearchSucsess(results)),
     );
   }
 
-  // Method to set initial search results
-  void setSearchResults(List<SearchResult> results) {
-    if (_selectedModalities.isNotEmpty) {
-      final filteredResults = results.where((result) => 
-        _selectedModalities.contains(result.contentType)
-      ).toList();
-      emit(SearchSucsess(filteredResults));
+  Future<void> searchWithFiles(
+    List<String> files, {
+    String? query,
+    int? limit,
+    List<String>? modalities,
+  }) async {
+    emit(SearchLoading());
+    final result = await repository.searchWithFiles(
+      files,
+      query: query,
+      limit: limit,
+      modalities: modalities,
+    );
+    result.fold(
+      (failure) => emit(SearchError(failure.errMessage)),
+      (results) => emit(SearchSucsess(results)),
+    );
+  }
+
+  Future<void> searchQueries() async {
+    emit(SearchLoading());
+    final result = await repository.queries();
+    result.fold(
+      (failure) => emit(SearchError(failure.errMessage)),
+      (queries) => emit(QueriesSuccess(queries)),
+    );
+  }
+
+  Future<void> deleteQuery(int id) async {
+    emit(SearchLoading());
+    final result = await repository.deleteQuery(id);
+    result.fold(
+      (failure) => emit(SearchError(failure.errMessage)),
+      (_) => searchQueries(),
+    );
+  }
+
+  void toggleModality(String modality) {
+    if (_selectedModalities.contains(modality)) {
+      _selectedModalities.remove(modality);
     } else {
-      emit(SearchSucsess(results));
+      _selectedModalities.add(modality);
     }
+    // Emit both states to ensure proper rebuild
+    emit(ModalityChanged(_selectedModalities));
+    emit(SearchInitial());
   }
 
   // Method to set search limit
@@ -55,52 +82,9 @@ class SearchCubit extends Cubit<SearchState> {
     _limit = limit;
   }
 
-  // Method to toggle modality selection
-  void toggleModality(String modality) {
-    if (_selectedModalities.contains(modality)) {
-      _selectedModalities.remove(modality);
-    } else {
-      _selectedModalities.add(modality);
-    }
-    // Emit a new state to trigger UI update
-    emit(ModalityChanged(List.from(_selectedModalities)));
-  }
-
-  // Method to clear modality selection
-  void clearModalities() {
-    _selectedModalities.clear();
-    // Emit a new state to trigger UI update
-    emit(ModalityChanged([]));
-  }
-
-  // Method to get currently selected modalities
+  // Getter for selected modalities
   List<String> get selectedModalities => _selectedModalities;
-
-  Future<void> searchQueries() async {
-    emit(SearchLoading());
-    final result = await searchRepository.queries();
-    result.fold(
-      (failure) => emit(SearchError(failure.errMessage)),
-      (queries) {
-        _recentQueries = queries;
-        emit(QueriesSuccess(queries));
-      }
-    );
-  }
-
-  Future<void> deleteQuery(int id) async {
-    emit(SearchLoading());
-    final result = await searchRepository.deleteQuery(id);
-    result.fold(
-      (failure) => emit(SearchError(failure.errMessage)),
-      (message) {
-        _recentQueries.removeWhere((query) => query?.id == id);
-        emit(DeleteQuerySuccess(message));
-        // Re-emit queries state to update UI
-        emit(QueriesSuccess(_recentQueries));
-      },
-    );
-  }
 }
+
 
 
