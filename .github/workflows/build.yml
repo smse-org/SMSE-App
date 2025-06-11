@@ -105,46 +105,75 @@ jobs:
         #10.5 Fix macOS Build Configuration
       - name: Fix macOS Build Configuration
         run: |
-          # Create or update Podfile with correct deployment target
-          cat > macos/Podfile << 'EOF'
-          platform :osx, '10.15'
-
-          target 'Runner' do
-            use_frameworks!
-            use_modular_headers!
-
-            flutter_install_all_macos_pods File.dirname(File.realpath(__FILE__))
-          end
-
-          post_install do |installer|
-            installer.pods_project.targets.each do |target|
-              flutter_additional_macos_build_settings(target)
+          # Check if macos directory exists
+          if [ -d "macos" ]; then
+            echo "Configuring macOS build settings..."
+            
+            # Update Podfile to fix deployment target
+            if [ -f "macos/Podfile" ]; then
+              # Backup original Podfile
+              cp macos/Podfile macos/Podfile.backup
               
-              target.build_configurations.each do |config|
-                config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'
-              end
-            end
-          end
-          EOF
+              # Update platform version if it exists
+              sed -i '' "s/platform :osx, '[0-9.]*'/platform :osx, '10.15'/g" macos/Podfile
+              
+              # Add platform line if it doesn't exist
+              if ! grep -q "platform :osx" macos/Podfile; then
+                sed -i '' '1i\
+platform :osx, '\''10.15'\''
+' macos/Podfile
+              fi
+              
+              # Add or update post_install block to fix deployment target
+              if grep -q "post_install" macos/Podfile; then
+                # If post_install exists, ensure it has the deployment target fix
+                if ! grep -q "MACOSX_DEPLOYMENT_TARGET" macos/Podfile; then
+                  # Add deployment target fix to existing post_install
+                  sed -i '' '/post_install do |installer|/a\
+\  installer.pods_project.targets.each do |target|\
+\    target.build_configurations.each do |config|\
+\      config.build_settings['\''MACOSX_DEPLOYMENT_TARGET'\''] = '\''10.15'\''\
+\    end\
+\  end
+' macos/Podfile
+                fi
+              else
+                # Add complete post_install block
+                echo "" >> macos/Podfile
+                echo "post_install do |installer|" >> macos/Podfile
+                echo "  installer.pods_project.targets.each do |target|" >> macos/Podfile
+                echo "    flutter_additional_macos_build_settings(target)" >> macos/Podfile
+                echo "    target.build_configurations.each do |config|" >> macos/Podfile
+                echo "      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'" >> macos/Podfile
+                echo "    end" >> macos/Podfile
+                echo "  end" >> macos/Podfile
+                echo "end" >> macos/Podfile
+              fi
+              
+              echo "Updated Podfile:"
+              cat macos/Podfile
+            fi
+            
+            # Set environment variable for the build
+            echo "MACOSX_DEPLOYMENT_TARGET=10.15" >> $GITHUB_ENV
+          fi
 
         #11 Build macOS Desktop
       - name: Build macOS Desktop
         run: |
           flutter config --enable-macos-desktop
           
-          # Fix macOS deployment target in project files
-          if [ -f "macos/Podfile" ]; then
-            # Update Podfile if it exists
-            sed -i '' "s/platform :osx, '[0-9.]*'/platform :osx, '10.15'/g" macos/Podfile || true
-          fi
-          
-          # Set deployment target environment variable
-          export MACOSX_DEPLOYMENT_TARGET=10.15
-          
           # Clean and rebuild to apply changes
           flutter clean
           flutter pub get
+          
+          # Use the environment variable set in previous step
+          export MACOSX_DEPLOYMENT_TARGET=10.15
+          
+          # Install pods with updated configuration
           cd macos && pod install --repo-update && cd ..
+          
+          # Build macOS app
           flutter build macos --release
 
       - name: Compress Archives
