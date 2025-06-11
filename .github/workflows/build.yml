@@ -23,13 +23,18 @@ on:
         type: boolean
 
 jobs:  
-  build-mobile-web:      
-    name: Build Mobile & Web
+  # Main build job for mobile, web, and macOS
+  build-main:      
+    name: Build Mobile, Web & macOS
     runs-on: macos-latest
     permissions:
       contents: write
       pages: write
       id-token: write
+
+    outputs:
+      version: ${{ steps.determine_version.outputs.version }}
+      release_token: ${{ steps.generate_token.outputs.release_token }}
 
     steps:
         #1 Checkout Repository
@@ -117,7 +122,7 @@ jobs:
             tar -czf macos_build.tar.gz macos
           fi
           
-        #14 Upload Artifacts
+        #12 Upload Artifacts
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -148,10 +153,8 @@ jobs:
         with:
           name: macOS-Build
           path: build/macos_build.tar.gz
-
-
           
-        #16 Setup Pages (for web deployment)
+        #13 Setup Pages (for web deployment)
       - name: Setup Pages
         if: github.event.inputs.deploy_to_pages == 'true' || github.event_name != 'workflow_dispatch'
         uses: actions/configure-pages@v4
@@ -162,7 +165,7 @@ jobs:
         with:
           path: build/web
           
-        #17 Extract or Use Custom Version
+        #14 Extract or Use Custom Version
       - name: Determine Version
         id: determine_version
         run: |
@@ -173,65 +176,170 @@ jobs:
             version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
             echo "Using pubspec.yaml version: $version"
           fi
+          echo "version=$version" >> $GITHUB_OUTPUT
           echo "VERSION=$version" >> $GITHUB_ENV
           
-        #18 Generate Release Token
+        #15 Generate Release Token
       - name: Generate Release Token
         id: generate_token
         run: |
           if [ -n "${{ github.event.inputs.release_token }}" ]; then
-            echo "RELEASE_TOKEN=${{ github.event.inputs.release_token }}" >> $GITHUB_ENV
+            release_token="${{ github.event.inputs.release_token }}"
             echo "Using custom release token"
           else
             # Generate a random token based on timestamp and run number
-            random_token="release-$(date +%s)-${{ github.run_number }}-$(openssl rand -hex 4)"
-            echo "RELEASE_TOKEN=$random_token" >> $GITHUB_ENV
-            echo "Generated random release token: $random_token"
+            release_token="release-$(date +%s)-${{ github.run_number }}-$(openssl rand -hex 4)"
+            echo "Generated random release token: $release_token"
           fi
-          
-        #19 Check if Tag Exists
+          echo "release_token=$release_token" >> $GITHUB_OUTPUT
+          echo "RELEASE_TOKEN=$release_token" >> $GITHUB_ENV
+
+  # Linux build job
+  build-linux:
+    name: Build Linux Desktop
+    runs-on: ubuntu-latest
+    needs: build-main
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Linux Desktop
+        run: |
+          flutter config --enable-linux-desktop
+          flutter build linux --release
+
+      - name: Compress Linux Build
+        run: |
+          cd build
+          tar -czf linux_build.tar.gz linux
+
+      - name: Upload Linux Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux-Build
+          path: build/linux_build.tar.gz
+
+  # Windows build job
+  build-windows:
+    name: Build Windows Desktop
+    runs-on: windows-latest
+    needs: build-main
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Windows Desktop
+        run: |
+          flutter config --enable-windows-desktop
+          flutter build windows --release
+
+      - name: Compress Windows Build
+        run: |
+          cd build
+          Compress-Archive -Path windows -DestinationPath windows_build.zip
+
+      - name: Upload Windows Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Build
+          path: build/windows_build.zip
+
+  # Release job that depends on all build jobs
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-main, build-linux, build-windows]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
       - name: Check if Tag Exists
         id: check_tag
         run: |
-          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
+          if git rev-parse "v${{ needs.build-main.outputs.version }}" >/dev/null 2>&1; then
             echo "TAG_EXISTS=true" >> $GITHUB_ENV
-            echo "Tag v${{ env.VERSION }} already exists"
+            echo "Tag v${{ needs.build-main.outputs.version }} already exists"
           else
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
-            echo "Tag v${{ env.VERSION }} does not exist"
+            echo "Tag v${{ needs.build-main.outputs.version }} does not exist"
           fi
           
-        #20 Modify Tag if it Exists
-      - name: Modify Tag
+      - name: Modify Tag if it Exists
         if: env.TAG_EXISTS == 'true'
         run: |
-          new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
+          new_version="${{ needs.build-main.outputs.version }}-build-${{ github.run_number }}"
           echo "VERSION=$new_version" >> $GITHUB_ENV
           echo "Modified version to: $new_version"
         
-        #20 Prepare Release Artifacts
+      - name: Set Final Version
+        if: env.TAG_EXISTS == 'false'
+        run: |
+          echo "VERSION=${{ needs.build-main.outputs.version }}" >> $GITHUB_ENV
+
       - name: Prepare Release Artifacts
         run: |
           mkdir -p release_artifacts
-          cp build/app/outputs/flutter-apk/app-release.apk release_artifacts/
-          cp build/app/outputs/bundle/release/app-release.aab release_artifacts/
-          cp build/ios_build.tar.gz release_artifacts/
-          cp build/web_build.tar.gz release_artifacts/
           
-          # Copy desktop builds if they exist
-          if [ -f "build/macos_build.tar.gz" ]; then
-            cp build/macos_build.tar.gz release_artifacts/
+          # Copy mobile builds
+          cp artifacts/APK-Release/app-release.apk release_artifacts/
+          cp artifacts/AAB-Release/app-release.aab release_artifacts/
+          cp artifacts/iOS-Build/ios_build.tar.gz release_artifacts/
+          
+          # Copy web build
+          cp artifacts/Web-Build/web_build.tar.gz release_artifacts/
+          
+          # Copy desktop builds
+          if [ -f "artifacts/macOS-Build/macos_build.tar.gz" ]; then
+            cp artifacts/macOS-Build/macos_build.tar.gz release_artifacts/
           fi
           
-          if [ -f "build/linux_build.tar.gz" ]; then
-            cp build/linux_build.tar.gz release_artifacts/
+          if [ -f "artifacts/Linux-Build/linux_build.tar.gz" ]; then
+            cp artifacts/Linux-Build/linux_build.tar.gz release_artifacts/
+          fi
+          
+          if [ -f "artifacts/Windows-Build/windows_build.zip" ]; then
+            cp artifacts/Windows-Build/windows_build.zip release_artifacts/
           fi
           
           # List all artifacts
           echo "Release artifacts:"
           ls -la release_artifacts/
         
-        #21 Create Release
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
@@ -244,17 +352,24 @@ jobs:
             **Build Information:**
             - Build Number: ${{ github.run_number }}
             - Commit: ${{ github.sha }}
-            - Release Token: ${{ env.RELEASE_TOKEN }}
+            - Release Token: ${{ needs.build-main.outputs.release_token }}
             
             **Available Builds:**
-            - 📱 Android APK
-            - 📱 Android App Bundle (AAB)
-            - 🍎 iOS Build (unsigned)
-            - 🌐 Web Build
-            - 🖥️ macOS Build (if available)
-            - 🐧 Linux Build (if available)
+            - 📱 Android APK (`app-release.apk`)
+            - 📱 Android App Bundle (`app-release.aab`)
+            - 🍎 iOS Build (`ios_build.tar.gz`) - unsigned IPA
+            - 🌐 Web Build (`web_build.tar.gz`)
+            - 🍎 macOS Build (`macos_build.tar.gz`) - if available
+            - 🐧 Linux Build (`linux_build.tar.gz`)
+            - 🪟 Windows Build (`windows_build.zip`)
             
             **Web App:** Available at GitHub Pages (if deployed)
+            
+            **Installation Notes:**
+            - **Android**: Install the APK directly or use the AAB for Play Store
+            - **iOS**: Requires code signing before installation
+            - **Web**: Extract and serve the web build or use GitHub Pages
+            - **Desktop**: Extract the archive and run the executable
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           prerelease: false
@@ -262,7 +377,7 @@ jobs:
   # Separate job for GitHub Pages deployment
   deploy-pages:
     if: github.event.inputs.deploy_to_pages == 'true' || github.event_name != 'workflow_dispatch'
-    needs: build-mobile-web
+    needs: build-main
     runs-on: ubuntu-latest
     permissions:
       pages: write
